@@ -20,3 +20,4 @@ GET         /javascript/*file        controllers.Assets.at(path="/public/javascr
 
 GET         /*file                   controllers.Assets.at(path="/public/html", file)
 
+POST        /upload/:name            controllers.Application.upload(name:String)
