@@ -16,92 +16,222 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/stress/index">DSF平台</a>
+            <a class="navbar-brand" href="#">自动注册机V1.0</a>
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-left">
-                <%--<li><a href="/monitor/index">监控</a></li>--%>
-                <li><a href="/stress/index">压测配置</a></li>
-                <%--<li><a href="/stress/index">JMX</a></li>--%>
-                <li><a href="/stress/log">任务引擎</a></li>
+                <!--<%---->
+                <li><a href="/monitor/index">配置</a></li>
+                <!----%>-->
+                <li><a href="/stress/index">邮箱注册</a></li>
+                <!--<%---->
+                <!--<li><a href="/stress/index">JMX</a></li>-->
+                <!----%>-->
+                <!--<li><a href="/stress/log">任务引擎</a></li>-->
             </ul>
         </div>
     </div>
 </div>
 
 
-
 <div class="container-fluid" style="margin-top: 50px">
-    <h1>Monitor Browser</h1>
-
-    <div class="well">
-        <form class="form-inline" role="form">
-                    <span class="btn-group pull-right">
-                        <a class="btn btn-status btn-success" data-value="RUNNING">正在运行</a>
-                        <a class="btn btn-status btn-danger disable-feedback" data-value="KILLED">已停止</a>
-                    </span>
-            <input type="text" id="filterInput" class="form-control" placeholder="搜索用户名、名称等...">
-            <a href="/monitor/create" class="btn btn-default" role="button">创建</a>
-        </form>
-    </div>
-
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>服务名</th>
-                <th>描述</th>
-                <th>所有者</th>
-                <th>状态</th>
-                <th>创建时间</th>
-                <th>操作</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr style="cursor: pointer;">
-                <td>appcache</td>
-                <td>缓存查询框架</td>
-                <td>loren</td>
-                <td>
-                    <span class="label label-success">RUNNING</span>
-                </td>
-                <td>2014</td>
-                <td>
-                    <button type="button" class="btn btn-default btn-sm">停止</button>
-                </td>
-            </tr>
-            <tr style="cursor: pointer;">
-                <td>softquery</td>
-                <td>amet</td>
-                <td>consectetur</td>
-                <td>
-                    <span class="label label-success">RUNNING</span>
-                </td>
-                <td>elit</td>
-                <td>
-                    <button type="button" class="btn btn-default btn-sm">停止</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
     <div class="row">
-        <div class="col-sm-4" style="padding-top: 25px">
-            <div class="dataTables_info" id="jobsTable_info">Showing 1 to 30 of 100 entries</div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-2 sidebar" style="padding-top: 5px;">
+                    <ul class="nav nav-sidebar">
+                        <li>
+                            <h3>
+                                <span class="label label-default">专用设置</span>
+                            </h3>
+                        </li>
+                        <li>
+                            <div class="input-group">
+                                <span class="input-group-addon">工作线程</span>
+                                <input type="text" class="form-control" placeholder="10"
+                                       aria-describedby="basic-addon1">
+                            </div>
+                        </li>
+                        <li>
+                            <div class="input-group">
+                                <span class="input-group-addon">邮箱类型</span>
+                                <input type="text" class="form-control" placeholder="sina.com"
+                                       aria-describedby="basic-addon1">
+                            </div>
+                        </li>
+                        <li>
+                            <div class="input-group">
+                                <span class="input-group-addon" id="basic-addon1">等待时间</span>
+                                <input type="text" class="form-control" placeholder="5000"
+                                       aria-describedby="basic-addon1">
+                            </div>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-sidebar">
+                        <li>
+                            <h3>
+                                <span class="label label-default">远程打码</span>
+                            </h3>
+                        </li>
+                        <li>
+                            <div class="input-group">
+                                <span class="input-group-addon" id="basic-addon1">打码平台</span>
+                                <input type="text" class="form-control" placeholder="Username"
+                                       aria-describedby="basic-addon1">
+                            </div>
+                        </li>
+                        <li>
+                            <div class="input-group">
+                                <span class="input-group-addon" id="basic-addon1">用户名称</span>
+                                <input type="text" class="form-control" placeholder="Username"
+                                       aria-describedby="basic-addon1">
+                            </div>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-sidebar">
+                        <li>
+                            <h3>
+                                <span class="label label-default">切换策略</span>
+                            </h3>
+                        </li>
+                        <li>
+                            <div class="input-group">
+                                <span class="input-group-addon" id="basic-addon1">切换方式</span>
+                                <input type="text" class="form-control" placeholder="Username"
+                                       aria-describedby="basic-addon1">
+                            </div>
+                        </li>
+                        <li>
+                            <div class="input-group" style="padding-bottom: 30px;">
+                                <span class="input-group-addon" id="basic-addon1">代理文件</span>
+                                <input type="text" class="form-control" placeholder="Username"
+                                       aria-describedby="basic-addon1">
+                            </div>
+                        </li>
+                        <div class="alert alert-warning" role="alert">代理文件中的代理格式为xx.xx.xx.xx:xx，请确保代理数量足够、有效</div>
+                    </ul>
+                </div>
+                <div class="col-sm-9 main" style="padding-left: 30px;">
+                    <div class="row" style="padding-top: 20px;">
+                        <nav class="navbar navbar-default" style="margin-bottom: 0px;">
+                            <div class="container-fluid">
+                                <div class="navbar-header">
+                                    <a class="navbar-brand">
+                                        控制
+                                    </a>
+                                </div>
+                                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-3">
+                                    <button type="button" class="btn btn-default navbar-btn">启动</button>
+                                    <button type="button" class="btn btn-default navbar-btn">停止</button>
+                                    <button type="button" class="btn btn-default navbar-btn navbar-right">导出</button>
+
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    <h3 class="sub-header" style="">成功邮箱</h3>
+
+                    <div class="row placeholders">
+                        <table class="table table-bordered" style="margin-bottom: 0px;">
+                            <thead>
+                            <tr>
+                                <th>邮箱</th>
+                                <th>密码</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>edwardsbean@sina.com</td>
+                                <td>Otto</td>
+                            </tr>
+                            <tr>
+                                <td>edwardsbean2@sina.com</td>
+                                <td>Thornton</td>
+                            </tr>
+                            <tr>
+                                <td>edwardsbean3@sina.com</td>
+                                <td>the Bird</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="sub-header">工作日志</h3>
+
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <span>hahha</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Header</th>
+                                    <th>Header</th>
+                                    <th>Header</th>
+                                    <th>Header</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>1,001</td>
+                                    <td>Lorem</td>
+                                    <td>ipsum</td>
+                                    <td>dolor</td>
+                                    <td>sit</td>
+                                </tr>
+                                <tr>
+                                    <td>1,002</td>
+                                    <td>amet</td>
+                                    <td>consectetur</td>
+                                    <td>adipiscing</td>
+                                    <td>elit</td>
+                                </tr>
+                                <tr>
+                                    <td>1,003</td>
+                                    <td>Integer</td>
+                                    <td>nec</td>
+                                    <td>odio</td>
+                                    <td>Praesent</td>
+                                </tr>
+                                <tr>
+                                    <td>1,003</td>
+                                    <td>libero</td>
+                                    <td>Sed</td>
+                                    <td>cursus</td>
+                                    <td>ante</td>
+                                </tr>
+                                <tr>
+                                    <td>1,004</td>
+                                    <td>dapibus</td>
+                                    <td>diam</td>
+                                    <td>Sed</td>
+                                    <td>nisi</td>
+                                </tr>
+                                <tr>
+                                    <td>1,005</td>
+                                    <td>Nulla</td>
+                                    <td>quis</td>
+                                    <td>sem</td>
+                                    <td>at</td>
+                                </tr>
+                                <tr>
+                                    <td>1,006</td>
+                                    <td>nibh</td>
+                                    <td>elementum</td>
+                                    <td>imperdiet</td>
+                                    <td>Duis</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
 
-        <div class="pull-right" style="padding-right: 20px">
-            <ul class="pagination">
-                <li><a href="#">&laquo;</a></li>
-                <li><a href="#">1</a></li>
-                <li><a href="#">2</a></li>
-                <li><a href="#">3</a></li>
-                <li><a href="#">4</a></li>
-                <li><a href="#">5</a></li>
-                <li><a href="#">&raquo;</a></li>
-            </ul>
-        </div>
     </div>
 </div>
 <script src="/webjars/jquery/2.1.1/jquery.min.js"></script>
