@@ -4,6 +4,43 @@
     <title>registry-machine</title>
     <link rel='stylesheet' href='/webjars/bootstrap/3.3.1/css/bootstrap.min.css'>
     <script src="/javascript/juicer-min.js"></script>
+    <style>
+        .log-viewer {
+            margin: 0;
+            padding: 0;
+        }
+        .log-viewer .panel {
+            position: relative;
+            height: 100%;
+        }
+        .log-viewer .panel .panel-heading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+        }
+        .log-viewer .panel .panel-body {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 0;
+            background-color: #fcfcfc;
+        }
+        .log-viewer .panel .panel-body pre {
+            margin: 0;
+            border: 0;
+            height: 100%;
+            font-size: 12px;
+            background-color: transparent;
+            overflow: auto;
+            width: auto;
+            word-wrap: normal;
+            white-space: pre;
+        }
+    </style>
 </head>
 <body role="document">
 
@@ -110,6 +147,31 @@
                         </li>
                         <div class="alert alert-warning" role="alert">代理文件中的代理格式为xx.xx.xx.xx:xx，请确保代理数量足够、有效</div>
                     </ul>
+                    <ul class="nav nav-sidebar">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th class="col-sm-6">类型</th>
+                                <th class="col-sm-6">计数</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>网络错误</td>
+                                <td>123</td>
+                            </tr>
+                            <tr>
+                                <td>注册成功</td>
+                                <td>123</td>
+                            </tr>
+                            <tr>
+                                <td>用户存在</td>
+                                <td>123</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </ul>
+
                 </div>
                 <div class="col-sm-9 main" style="padding-left: 30px;">
                     <div class="row" style="padding-top: 20px;">
@@ -156,76 +218,52 @@
                         </table>
                     </div>
 
-                    <h3 class="sub-header">工作日志</h3>
 
-                    <div class="row">
-                        <div class="col-sm-2">
-                            <span>hahha</span>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Header</th>
-                                    <th>Header</th>
-                                    <th>Header</th>
-                                    <th>Header</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>1,001</td>
-                                    <td>Lorem</td>
-                                    <td>ipsum</td>
-                                    <td>dolor</td>
-                                    <td>sit</td>
-                                </tr>
-                                <tr>
-                                    <td>1,002</td>
-                                    <td>amet</td>
-                                    <td>consectetur</td>
-                                    <td>adipiscing</td>
-                                    <td>elit</td>
-                                </tr>
-                                <tr>
-                                    <td>1,003</td>
-                                    <td>Integer</td>
-                                    <td>nec</td>
-                                    <td>odio</td>
-                                    <td>Praesent</td>
-                                </tr>
-                                <tr>
-                                    <td>1,003</td>
-                                    <td>libero</td>
-                                    <td>Sed</td>
-                                    <td>cursus</td>
-                                    <td>ante</td>
-                                </tr>
-                                <tr>
-                                    <td>1,004</td>
-                                    <td>dapibus</td>
-                                    <td>diam</td>
-                                    <td>Sed</td>
-                                    <td>nisi</td>
-                                </tr>
-                                <tr>
-                                    <td>1,005</td>
-                                    <td>Nulla</td>
-                                    <td>quis</td>
-                                    <td>sem</td>
-                                    <td>at</td>
-                                </tr>
-                                <tr>
-                                    <td>1,006</td>
-                                    <td>nibh</td>
-                                    <td>elementum</td>
-                                    <td>imperdiet</td>
-                                    <td>Duis</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <div class="row" style="padding-top: 30px;">
+                                <div class="log-viewer" style="padding-left: 0px; padding-right: 0px;">
+                                    <div class="panel panel-default" style="height: 400px;">
+                                        <div class="panel-heading">
+                                            <div class="pull-right">
+                                                <button type="button" id="updateLogBtn" class="btn btn-xs btn-default">Refresh</button>
+                                            </div>
+                                            Job Logs
+                                        </div>
+                                        <div class="panel-body">
+                <pre id="logSection">13-02-2015 09:48:55 CST start INFO - Starting job start at 1423792135177
+13-02-2015 09:48:55 CST start INFO - azkaban.webserver.url property was not set
+13-02-2015 09:48:55 CST start INFO - job JVM args: -Dazkaban.flowid=start -Dazkaban.execid=1711 -Dazkaban.jobid=start
+13-02-2015 09:48:55 CST start INFO - Building command job executor.
+13-02-2015 09:48:55 CST start INFO - 2 commands to execute.
+13-02-2015 09:48:55 CST start INFO - Command: chmod 777 /opt/azkaban/azkaban-exec-server-2.6.2/projects/ -R
+13-02-2015 09:48:55 CST start INFO - Environment variables: {JOB_NAME=start, JOB_PROP_FILE=/opt/azkaban/azkaban-exec-server-2.6.2/executions/1711/weather-aqi/conf/start_props_523438483559623794_tmp, JOB_OUTPUT_PROP_FILE=/opt/azkaban/azkaban-exec-server-2.6.2/executions/1711/weather-aqi/conf/start_output_2663131920345961118_tmp}
+13-02-2015 09:48:55 CST start INFO - Working directory: /opt/azkaban/azkaban-exec-server-2.6.2/executions/1711/weather-aqi/conf
+13-02-2015 09:48:55 CST start INFO - Process completed successfully in 0 seconds.
+13-02-2015 09:48:55 CST start INFO - Command: ../bin/start.sh
+13-02-2015 09:48:55 CST start INFO - Environment variables: {JOB_NAME=start, JOB_PROP_FILE=/opt/azkaban/azkaban-exec-server-2.6.2/executions/1711/weather-aqi/conf/start_props_523438483559623794_tmp, JOB_OUTPUT_PROP_FILE=/opt/azkaban/azkaban-exec-server-2.6.2/executions/1711/weather-aqi/conf/start_output_2663131920345961118_tmp}
+13-02-2015 09:48:55 CST start INFO - Working directory: /opt/azkaban/azkaban-exec-server-2.6.2/executions/1711/weather-aqi/conf
+13-02-2015 09:48:55 CST start INFO - java -cp /opt/azkaban/azkaban-exec-server-2.6.2/executions/1711/weather-aqi/conf:/opt/azkaban/azkaban-exec-server-2.6.2/executions/1711/weather-aqi/lib/* com.baidu.weather.AQIMain
+13-02-2015 09:48:55 CST start INFO - 2015-02-13 09:48:55 INFO AQIMain.java:22 启动应用程序 ;
+13-02-2015 09:48:55 CST start INFO -  2015-02-13 09:48:55 INFO AbstractApplicationContext.java:515 Refreshing org.springframework.context.support.ClassPathXmlApplicationContext@22ae3010: startup date [Fri Feb 13 09:48:55 CST 2015]; root of context hierarchy ;
+13-02-2015 09:48:55 CST start INFO -  2015-02-13 09:48:55 INFO XmlBeanDefinitionReader.java:316 Loading XML bean definitions from class path resource [dict.xml] ;
+13-02-2015 09:48:56 CST start INFO -  2015-02-13 09:48:56 INFO XmlBeanDefinitionReader.java:316 Loading XML bean definitions from class path resource [dao.xml] ;
+13-02-2015 09:48:57 CST start INFO -  2015-02-13 09:48:57 INFO SpiderJob.java:18 定时调度，抓取AQI ;
+13-02-2015 09:48:57 CST start INFO -  2015-02-13 09:48:57 INFO Spider.java:307 Spider aqi-spider started! ;
+13-02-2015 09:48:57 CST start INFO -  2015-02-13 09:48:57 INFO HttpClientDownloader.java:87 downloading page <a href="http://www.pm25.in/rank" title="">http://www.pm25.in/rank</a> ;
+13-02-2015 09:48:58 CST start INFO -  2015-02-13 09:48:58 INFO FilterUtil.java:104 城市：塔城，字段暂无数据：pm10,值：_ ;
+13-02-2015 09:48:58 CST start INFO -  2015-02-13 09:48:58 INFO FilterUtil.java:104 城市：海西，字段暂无数据：pm10,值：_ ;
+13-02-2015 09:48:59 CST start INFO -  2015-02-13 09:48:59 INFO FilterUtil.java:104 城市：黔南，字段暂无数据：pm10,值：_ ;
+13-02-2015 09:48:59 CST start INFO -  2015-02-13 09:48:59 INFO FilterUtil.java:104 城市：大理，字段暂无数据：pm10,值：_ ;
+13-02-2015 09:48:59 CST start INFO -  2015-02-13 09:48:59 INFO FilterUtil.java:104 城市：湖州，字段暂无数据：pm10,值：_ ;
+13-02-2015 09:48:59 CST start INFO -  2015-02-13 09:48:59 INFO FilterUtil.java:104 城市：海东，字段暂无数据：pm10,值：_ ;
+13-02-2015 09:48:59 CST start INFO -  2015-02-13 09:48:59 INFO FilterUtil.java:104 城市：崇左，字段暂无数据：pm10,值：_ ;
+13-02-2015 09:48:59 CST start INFO -  2015-02-13 09:48:59 INFO FilterUtil.java:104 城市：泰安，字段暂无数据：pm10,值：_ ;
+13-02-2015 09:49:02 CST start INFO -
+13-02-2015 09:49:02 CST start INFO - Process completed successfully in 7 seconds.
+13-02-2015 09:49:02 CST start INFO - Finishing job start attempt: 0 at 1423792142752 with status SUCCEEDED
+</pre>
+                                        </div>
+                                    </div>
+                            </div>
                     </div>
 
                 </div>
