@@ -1,5 +1,7 @@
 package registry.machine;
 
+import akka.actor.ActorRef;
+
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -8,6 +10,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Created by edwardsbean on 15-2-12.
  */
 public class RegistryMachineContext {
+    public static String phantomjsPath;
+    public static ActorRef logger;
+    public static RegistryMachine registryMachine = new RegistryMachine();
     private Queue<String> proxyQueue = new ConcurrentLinkedQueue<>();
     private Queue<String> emailQueue = new ConcurrentLinkedQueue<>();
 
@@ -34,5 +39,11 @@ public class RegistryMachineContext {
     public String getEmail() {
         return emailQueue.poll();
     }
-    
+    public static void start() {
+        registryMachine.run();
+    }
+
+    public static void stop() {
+        registryMachine.stop();
+    }
 }

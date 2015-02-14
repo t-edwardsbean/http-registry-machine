@@ -6,6 +6,7 @@
 GET         /                        controllers.Application.index
 GET         /hello/:name             controllers.Application.hello(name:String)
 POST        /hello                   controllers.Application.post
+GET         /socket                  controllers.Application.socket
 
 # Versioned Assets
 GET         /vassets/*file           controllers.Assets.versioned(path="/public", file: Asset)

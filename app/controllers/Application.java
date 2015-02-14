@@ -1,10 +1,14 @@
 package controllers;
 
+import akka.actor.ActorRef;
+import akka.actor.Props;
+import com.fasterxml.jackson.databind.JsonNode;
 import models.User;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import play.*;
 import play.data.Form;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.*;
 import registry.machine.RegistryMachineContext;
@@ -23,6 +27,16 @@ public class Application extends Controller {
         return ok("ok");
     }
 
+    public static Result start() {
+        RegistryMachineContext.start();
+        return ok("ok");
+    }
+
+    public static Result stop() {
+        RegistryMachineContext.stop();
+        return ok("ok");
+    }
+
     //GET，绑定参数并返回JSON
     public static Result hello(String name) {
         User user = new User();
@@ -34,6 +48,14 @@ public class Application extends Controller {
     public static Result post() {
         User user = Form.form(User.class).bindFromRequest().get();
         return ok(Json.toJson(user));
+    }
+
+    public static WebSocket<String> socket() {
+        return WebSocket.withActor(new F.Function<ActorRef, Props>() {
+            public Props apply(ActorRef out) throws Throwable {
+                return MyWebSocketActor.props(out);
+            }
+        });
     }
 
     public static Result upload(String name) {
