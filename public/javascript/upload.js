@@ -1,6 +1,6 @@
-var form = document.getElementsByClassName('up-form');
-var fileSelect = document.getElementById('file-select');
-var uploadButton = document.getElementById('upload-button');
+var form = document.getElementsByClassName('proxy-up-form');
+var fileSelect = document.getElementById('proxy-select');
+var uploadButton = document.getElementById('proxyBtn');
 
 form.onsubmit = upload(event);
 
