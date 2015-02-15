@@ -10,6 +10,6 @@ public abstract class TaskProcess {
         this.phantomjsPath = phantomjsPath;
     }
 
-    public abstract void process(AIMA aima, Task task);
+    public abstract void process(AIMA aima, Task task) throws Exception;
     
 }

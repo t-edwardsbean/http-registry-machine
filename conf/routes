@@ -4,6 +4,8 @@
 
 # Home page
 GET         /                        controllers.Application.index
+GET         /start                   controllers.Application.start
+GET         /stop                    controllers.Application.stop
 GET         /hello/:name             controllers.Application.hello(name:String)
 POST        /hello                   controllers.Application.post
 GET         /socket                  controllers.Application.socket

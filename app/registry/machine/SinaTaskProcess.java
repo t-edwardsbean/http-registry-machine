@@ -1,5 +1,6 @@
 package registry.machine;
 
+import akka.actor.ActorRef;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
@@ -16,14 +17,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by edwardsbean on 2015/2/9 0009.
  */
-public class SinaTaskProcess extends TaskProcess{
+public class SinaTaskProcess extends TaskProcess {
     private static Logger log = LoggerFactory.getLogger(SinaTaskProcess.class);
 
     public SinaTaskProcess(String phantomjsPath) {
         super(phantomjsPath);
     }
 
-    public void process(AIMA aima, Task task) {
+    public void process(AIMA aima, Task task) throws Exception {
         DesiredCapabilities caps = new DesiredCapabilities();
         List<String> args = new ArrayList<String>();
         args.add("--ignore-ssl-errors=yes");
@@ -44,27 +45,29 @@ public class SinaTaskProcess extends TaskProcess{
             try {
                 session.get("https://mail.sina.com.cn/register/regmail.php");
             } catch (Exception e) {
-                throw new MachineException("网络超时，或者代理不可用", e);
+                throw new MachineNetworkException(LogUtils.format(task, "网络超时，或者代理不可用"), e);
             }
             String beginTitle = session.getTitle();
             if (beginTitle.isEmpty()) {
-                throw new MachineException("找不到登陆头,网路超时或代理不可用");
+                throw new MachineNetworkException(LogUtils.format(task, "找不到登陆头,网路超时或代理不可用"));
             }
             log.debug("检测登陆头：" + beginTitle);
+            LogUtils.log(task, "检测登陆头：" + beginTitle);
             log.debug(Thread.currentThread() + "填写邮箱名字");
+            LogUtils.log(task, "填写邮箱名字");
             String email = task.getEmail();
-            if(17 < email.length() || email.length() < 6 ) {
-                throw new MachineException(Thread.currentThread() + "邮箱的长度应该在6-16个字符之间");
+            if (17 < email.length() || email.length() < 6) {
+                throw new MachineException(LogUtils.format(task, "邮箱的长度应该在6-16个字符之间"));
             } else if (!email.matches("\\w+")) {
-                throw new MachineException(Thread.currentThread() + "邮箱名仅允许使用小写英文、数字或下划线");
+                throw new MachineException(LogUtils.format(task, "邮箱名仅允许使用小写英文、数字或下划线"));
             }
 
             WebElement emailElement = session.findElementByCssSelector("#emailName");
             WebElement passwordElement = session.findElementByCssSelector("#password_2");
             emailElement.sendKeys(email);
             String password = task.getPassword();
-            if(17 < password.length() || password.length() < 6) {
-                throw new MachineException(Thread.currentThread() + "密码的长度应该在6-16个字符之间");
+            if (17 < password.length() || password.length() < 6) {
+                throw new MachineException(LogUtils.format(task, "密码的长度应该在6-16个字符之间"));
             }
             passwordElement.sendKeys(password);
             WebElement emailElementAlert = session.findElementByXPath("//*[@id=\"form_2\"]/ul/li[1]/p");
@@ -75,18 +78,21 @@ public class SinaTaskProcess extends TaskProcess{
                 e.printStackTrace();
             }
             if (!emailElementAlert.getText().isEmpty()) {
-                throw new MachineException(Thread.currentThread() + "邮箱不合法：" + emailElementAlert.getText());
+                LogUtils.emailException();
+                throw new MachineException(LogUtils.format(task, "邮箱不合法：" + emailElementAlert.getText()));
             } else {
                 log.debug(Thread.currentThread() + "邮箱ok,继续");
+                LogUtils.log(task, "邮箱ok,继续");
             }
             WebElement phoneElement = session.findElementByCssSelector("#phoneNum_2");
-            String phone = aima.getPhone();
+            String phone = aima.getPhone(task);
             phoneElement.sendKeys(phone);
             WebElement releaseCodeElement = session.findElementByCssSelector("#getCode_2");
             releaseCodeElement.click();
             //再次点击
             String releaseCodeMessage = session.findElementByCssSelector("#getCode_2").getText();
-            log.debug("验证码：" + releaseCodeMessage);
+            log.debug("验证码发送情况：" + releaseCodeMessage);
+            LogUtils.log(task, "验证码发送情况：" + releaseCodeMessage);
             if (!releaseCodeMessage.endsWith("秒后重新获取")) {
                 try {
                     Thread.sleep(1000);
@@ -95,8 +101,9 @@ public class SinaTaskProcess extends TaskProcess{
                 }
                 releaseCodeElement.click();
                 log.debug("再次点击获取验证码：" + session.findElementByCssSelector("#getCode_2").getText());
+                LogUtils.log(task, "再次点击获取验证码：" + session.findElementByCssSelector("#getCode_2").getText());
             }
-            String code = aima.getPhoneCode(phone);
+            String code = aima.getPhoneCode(task, phone);
             if (code != null) {
                 WebElement codeElement = session.findElementByCssSelector("#checkCode_2");
                 codeElement.sendKeys(code);
@@ -110,8 +117,11 @@ public class SinaTaskProcess extends TaskProcess{
             }
             String endTitle = session.getTitle();
             log.debug("成功后跳转：" + endTitle);
+            LogUtils.log(task, "成功后跳转：" + endTitle);
             if (!beginTitle.equals(endTitle)) {
                 log.debug(Thread.currentThread() + "注册成功，账号：{},密码：{}", email, password);
+                LogUtils.log(task, "注册成功，账号：" + email + ",密码：" + password);
+                LogUtils.successEmail(task);
             } else {
                 try {
                     FileUtils.copyFile(((TakesScreenshot) session).getScreenshotAs(OutputType.FILE), new File(Thread.currentThread().getId() + email + "-end-exception.png"));
@@ -119,16 +129,10 @@ public class SinaTaskProcess extends TaskProcess{
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                throw new MachineException("注册失败");
+                throw new MachineException(LogUtils.format(task, "注册失败"));
             }
-        }catch (NoSuchElementException e){
-             log.error("找不到元素，或者网络超时",e);           
-        }catch (MachineException e) {
-            e.printStackTrace();
-        } catch (WebDriverException e) {
-            e.printStackTrace();
         } finally {
-                session.quit();
+            session.close();
         }
     }
 }

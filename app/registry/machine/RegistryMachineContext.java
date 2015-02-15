@@ -1,6 +1,7 @@
 package registry.machine;
 
 import akka.actor.ActorRef;
+import models.Email;
 
 import java.util.List;
 import java.util.Queue;
@@ -13,10 +14,18 @@ public class RegistryMachineContext {
     public static String phantomjsPath;
     public static ActorRef logger;
     public static RegistryMachine registryMachine = new RegistryMachine();
-    private Queue<String> proxyQueue = new ConcurrentLinkedQueue<>();
-    private Queue<String> emailQueue = new ConcurrentLinkedQueue<>();
+    public static Queue<String> proxyQueue = new ConcurrentLinkedQueue<>();
+    public static Queue<Email> emailQueue = new ConcurrentLinkedQueue<>();
+    
+    public static boolean isRunning() {
+        return registryMachine.isRunning();
+    }
 
-    public void addProxies(List<String> proxies) {
+    public static void addProxy(String proxy) {
+        proxyQueue.add(proxy);
+    }
+
+    public static void addProxies(List<String> proxies) {
         proxyQueue.addAll(proxies);
     }
 
@@ -28,17 +37,6 @@ public class RegistryMachineContext {
         return proxyQueue.poll();
     }
 
-    public void addEmails(List<String> emails) {
-        emailQueue.addAll(emails);
-    }
-
-    public void returnEmail(String email) {
-        emailQueue.add(email);
-    }
-
-    public String getEmail() {
-        return emailQueue.poll();
-    }
     public static void start() {
         registryMachine.run();
     }

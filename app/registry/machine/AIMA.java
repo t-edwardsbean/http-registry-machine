@@ -1,5 +1,6 @@
 package registry.machine;
 
+import akka.actor.ActorRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +32,15 @@ public class AIMA {
     private void login() {
         AIMA_LOGIN_URL = String.format(AIMA_LOGIN_URL, uid, pwd);
         log.debug("登录爱玛:" + AIMA_LOGIN_URL);
+        RegistryMachineContext.logger.tell("登录爱玛:" + AIMA_LOGIN_URL, ActorRef.noSender());
         String loginResult = HttpUtils.Get(AIMA_LOGIN_URL);
         String[] result = loginResult.split("\\|");
         if (result.length == 2) {
             this.token = result[1];
             log.debug("成功登录爱玛平台，Response:" + loginResult);
+            RegistryMachineContext.logger.tell("成功登录爱玛平台，Response:" + loginResult, ActorRef.noSender());
             log.debug("成功登录爱玛平台，Token:" + token);
+            RegistryMachineContext.logger.tell("成功登录爱玛平台，Token:" + token, ActorRef.noSender());
             AIMA_GET_PHONE_URL = String.format(AIMA_GET_PHONE_URL, pid, uid) + token;
             AIMA_GET_CODE_URL = String.format(AIMA_GET_CODE_URL, uid, token);
         } else {
@@ -44,11 +48,13 @@ public class AIMA {
         }
     }
 
-    public String getPhone() {
+    public String getPhone(Task task) {
         log.debug("请求手机号:" + AIMA_GET_PHONE_URL);
+        LogUtils.log(task, "请求手机号:" + AIMA_GET_PHONE_URL);
         String getPhoneResult = HttpUtils.Get(AIMA_GET_PHONE_URL);
         int phoneLength = getPhoneResult.split("\\|").length;
         log.debug("检测爱玛平台获取的手机号码：" + getPhoneResult);
+        LogUtils.log(task, "检测爱玛平台获取的手机号码：" + getPhoneResult);
         if (phoneLength == 2) {
             return getPhoneResult.split("\\|")[0];
         } else {
@@ -56,8 +62,9 @@ public class AIMA {
         }
     }
 
-    public String getPhoneCode(String phone) {
+    public String getPhoneCode(Task task, String phone) {
         log.debug("向爱玛平台所要手机验证码:" + AIMA_GET_CODE_URL + phone);
+        LogUtils.log(task, "向爱玛平台所要手机验证码:" + AIMA_GET_CODE_URL + phone);
         for (int i = 0; i < 20; i++) {
             try {
                 Thread.sleep(3000);
@@ -65,6 +72,7 @@ public class AIMA {
                 e.printStackTrace();
             }
             String codeResult = HttpUtils.Get(AIMA_GET_CODE_URL + phone);
+            LogUtils.log(task, "爱玛平台返回验证码信息:" + codeResult);
             log.debug("爱玛平台返回验证码信息:{}", codeResult);
             int length = codeResult.split("\\|").length;
             if (length == 2) {
@@ -73,12 +81,14 @@ public class AIMA {
                 String code = m.replaceAll("");
                 if (!code.isEmpty()) {
                     log.debug("发现野生的手机验证码一枚:" + code);
+                    LogUtils.log(task, "发现野生的手机验证码一枚:" + code);
                     return code;
                 }
             } else {
                 log.debug("验证码不对，继续等待");
+                LogUtils.log(task, "验证码不对，继续等待");
             }
         }
-        throw new MachineException("向爱玛平台索要验证码超时");
+        throw new MachineException(LogUtils.format(task, "向爱玛平台索要验证码超时"));
     }
 }

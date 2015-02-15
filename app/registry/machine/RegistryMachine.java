@@ -1,8 +1,11 @@
 package registry.machine;
 
+import akka.actor.ActorRef;
+import org.openqa.selenium.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -31,7 +34,7 @@ public class RegistryMachine {
     }
 
     public void thread(int num) {
-        service = Executors.newFixedThreadPool(num);
+        this.service = Executors.newFixedThreadPool(num);
     }
 
     public void addTask(Task... tasks) {
@@ -47,14 +50,29 @@ public class RegistryMachine {
     public void run() {
         init();
         log.debug("启动注册机");
+        RegistryMachineContext.logger.tell("启动注册机", ActorRef.noSender());
         for (final Task task : queue) {
+            String proxy = RegistryMachineContext.proxyQueue.poll();
+            if (proxy != null) {
+                List<String> args = new ArrayList<>();
+                args.add(proxy);
+                task.setArgs(args);
+                RegistryMachineContext.proxyQueue.add(proxy);
+            }
             service.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         process.process(aima, task);
+                    } catch (NoSuchElementException e) {
+                        log.error("process task error", e);
+                        LogUtils.networkException();
+                    } catch (MachineNetworkException e) {
+                        log.error("process task error", e);
+                        LogUtils.networkException();
                     } catch (Exception e) {
                         log.error("process task error", e);
+                        LogUtils.log(e.getMessage());
                     } finally {
                         count.incrementAndGet();
                     }
@@ -66,5 +84,21 @@ public class RegistryMachine {
 
     public void stop() {
         service.shutdownNow();
+    }
+
+    public boolean isRunning() {
+        return service.isShutdown();
+    }
+
+    @Override
+    public String toString() {
+        return "RegistryMachine{" +
+                "config=" + config +
+                ", aima=" + aima +
+                ", service=" + service +
+                ", queue=" + queue +
+                ", process=" + process +
+                ", count=" + count +
+                '}';
     }
 }

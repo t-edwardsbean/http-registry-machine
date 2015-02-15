@@ -162,15 +162,15 @@
                             <tbody>
                             <tr>
                                 <td>网络错误</td>
-                                <td>123</td>
+                                <td id="networkError">0</td>
                             </tr>
                             <tr>
                                 <td>注册成功</td>
-                                <td>123</td>
+                                <td id="successNum">0</td>
                             </tr>
                             <tr>
-                                <td>用户存在</td>
-                                <td>123</td>
+                                <td>邮箱错误</td>
+                                <td id="emailException">0</td>
                             </tr>
                             </tbody>
                         </table>
@@ -187,9 +187,9 @@
                                     </a>
                                 </div>
                                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-3">
-                                    <button type="button" class="btn btn-default navbar-btn">启动</button>
-                                    <button type="button" class="btn btn-default navbar-btn">停止</button>
-                                    <button type="button" class="btn btn-default navbar-btn navbar-right">导出</button>
+                                    <button id="startBtn" type="button" class="btn btn-default navbar-btn" onclick="start()">启动</button>
+                                    <button id="stopBtn" type="button" class="btn btn-default navbar-btn disabled" onclick="stop()">停止</button>
+                                    <!--<button id="outBtn" type="button" class="btn btn-default navbar-btn navbar-right" onclick="out()">导出</button>-->
 
                                 </div>
                             </div>
@@ -199,28 +199,12 @@
                         <div class="log-viewer" style="padding-left: 0px; padding-right: 0px;">
                             <div class="panel panel-default" style="height: 200px;">
                                 <div class="panel-heading">
-                                    <div class="pull-right">
-                                        <button type="button" id="updateLogBtn" class="btn btn-xs btn-default">Refresh
-                                        </button>
-                                    </div>
                                     成功邮箱
                                 </div>
                                 <div class="panel-body">
                 <pre id="emailSection" style="padding-top: 0;padding-left: 0;padding-right: 0">
                     <table class="table table-bordered" style="margin-bottom: 0px;">
-                        <tbody>
-                        <tr>
-                            <td>edwardsbean@sina.com</td>
-                            <td>Otto</td>
-                        </tr>
-                        <tr>
-                            <td>edwardsbean2@sina.com</td>
-                            <td>Thornton</td>
-                        </tr>
-                        <tr>
-                            <td>edwardsbean3@sina.com</td>
-                            <td>the Bird</td>
-                        </tr>
+                        <tbody id="successEmail">
                         </tbody>
                     </table>
                 </pre>
@@ -233,10 +217,6 @@
                         <div class="log-viewer" style="padding-left: 0px; padding-right: 0px;">
                             <div class="panel panel-default" style="height: 400px;">
                                 <div class="panel-heading">
-                                    <div class="pull-right">
-                                        <button type="button" id="updateLogBtn" class="btn btn-xs btn-default">Refresh
-                                        </button>
-                                    </div>
                                     工作日志
                                 </div>
                                 <div class="panel-body">
@@ -255,6 +235,7 @@
 <script src="/webjars/jquery/2.1.1/jquery.min.js"></script>
 <script src="/webjars/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 <script src="/javascript/socket.js"></script>
+<script src="/javascript/script.js"></script>
 <script>
     function goBack() {
         window.history.back()

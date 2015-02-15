@@ -5,17 +5,17 @@ package models;
  */
 public class Log {
     final String type;
-    final String value;
+    final Object value;
 
     public String getType() {
         return type;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 
-    public Log(String type, String value) {
+    public Log(String type, Object value) {
         this.type = type;
         this.value = value;
     }

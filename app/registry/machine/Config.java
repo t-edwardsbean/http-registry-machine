@@ -45,4 +45,14 @@ public class Config {
     public void setPid(String pid) {
         this.pid = pid;
     }
+
+    @Override
+    public String toString() {
+        return "Config{" +
+                "uid='" + uid + '\'' +
+                ", pwd='" + pwd + '\'' +
+                ", pid='" + pid + '\'' +
+                ", phantomjsPath='" + phantomjsPath + '\'' +
+                '}';
+    }
 }

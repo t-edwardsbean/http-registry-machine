@@ -2,7 +2,6 @@ package controllers;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import com.fasterxml.jackson.databind.JsonNode;
 import models.User;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -12,27 +11,31 @@ import play.libs.F;
 import play.libs.Json;
 import play.mvc.*;
 import registry.machine.RegistryMachineContext;
+import registry.machine.Task;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class Application extends Controller {
     public static Logger.ALogger log = Logger.of("application");
-    public static RegistryMachineContext registryMachineContext = new RegistryMachineContext();
-    
+
     public static Result index() {
         return ok("ok");
     }
 
     public static Result start() {
-        RegistryMachineContext.start();
-        return ok("ok");
+        log.debug("controller:启动注册机");
+        if (!RegistryMachineContext.isRunning()) {
+            RegistryMachineContext.start();
+            return ok("ok");
+        } else {
+            return badRequest("false");
+        }
     }
 
     public static Result stop() {
+        log.debug("controller:停止注册机");
         RegistryMachineContext.stop();
         return ok("ok");
     }
@@ -43,7 +46,7 @@ public class Application extends Controller {
         user.setName(name);
         return ok(Json.toJson(user));
     }
-    
+
     //POST，装箱
     public static Result post() {
         User user = Form.form(User.class).bindFromRequest().get();
@@ -70,18 +73,29 @@ public class Application extends Controller {
             } catch (IOException e) {
                 return badRequest("文件错误");
             }
-            List<String> lists = new ArrayList<>();
             while (iterator.hasNext()) {
                 String line = iterator.nextLine();
                 log.debug("{}内容：{}", name, line);
-                lists.add(line);
-            }
-            if ("proxy".equals(name)) {
-                registryMachineContext.addProxies(lists);
-            } else if ("email".equals(name)) {
-                registryMachineContext.addEmails(lists);
-            } else {
-                return badRequest("文件类型未知");
+                if ("email".equals(name)) {
+                    String[] splits = line.split(",");
+                    if (splits.length != 2) {
+                        return badRequest("该行文件内容格式不对：" + line);
+                    } else {
+                        String emailName = splits[0];
+                        String emailPwd = splits[1];
+                        Task task = new Task(emailName, emailPwd);
+                        RegistryMachineContext.registryMachine.addTask(task);
+                    }
+                } else if ("proxy".equals(name)) {
+                    String[] splits = line.split(":");
+                    if (splits.length != 2) {
+                        return badRequest("该行文件内容格式不对：" + line);
+                    } else {
+                        RegistryMachineContext.addProxy("--proxy=" + line);
+                    }
+                } else {
+                    return badRequest("该文件到底是proxy还是email");
+                }
             }
             return ok("ok");
         }
