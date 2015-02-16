@@ -22,4 +22,13 @@ libraryDependencies ++= Seq(
   "com.adrianhurt" %% "play-bootstrap3" % "0.1.1"
 )
 
+//不发布api doc
+sources in (Compile,doc) := Seq.empty
+
+publishArtifact in (Compile, packageDoc) := false
+
+mappings in Universal ++=
+  (baseDirectory.value / "scripts" * "*" get) map
+    (x => x -> ("scripts/" + x.getName))
+
 unmanagedResourceDirectories in Test <+= baseDirectory(_ / "target/web/public/test")

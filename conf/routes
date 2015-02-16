@@ -4,8 +4,9 @@
 
 # Home page
 GET         /                        controllers.Application.index
-GET         /start                   controllers.Application.start
+GET         /start                   controllers.Application.start(threadNum:Int?=1,waitTime:Int?=2000)
 GET         /stop                    controllers.Application.stop
+GET         /aima                    controllers.Application.aima
 GET         /hello/:name             controllers.Application.hello(name:String)
 POST        /hello                   controllers.Application.post
 GET         /socket                  controllers.Application.socket
@@ -21,7 +22,7 @@ GET         /webjars/*file           controllers.WebJarAssets.at(file)
 
 GET         /javascript/*file        controllers.Assets.at(path="/public/javascript", file)
 
-GET         /css/*file        controllers.Assets.at(path="/public/css", file)
+GET         /css/*file               controllers.Assets.at(path="/public/css", file)
 
 GET         /*file                   controllers.Assets.at(path="/public/html", file)
 

@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,9 +47,15 @@ public class RegistryMachine {
     }
 
     public void run() {
+        RegistryMachineContext.isRunning = true;
         init();
         log.debug("启动注册机");
         RegistryMachineContext.logger.tell("启动注册机", ActorRef.noSender());
+        if (queue.isEmpty()) {
+            LogUtils.log("没有邮箱文件，请上传");
+            RegistryMachineContext.isRunning = false;
+            return;
+        }
         for (final Task task : queue) {
             String proxy = RegistryMachineContext.proxyQueue.poll();
             if (proxy != null) {
@@ -84,10 +89,6 @@ public class RegistryMachine {
 
     public void stop() {
         service.shutdownNow();
-    }
-
-    public boolean isRunning() {
-        return service.isShutdown();
     }
 
     @Override

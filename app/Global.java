@@ -15,6 +15,7 @@ public class Global extends GlobalSettings {
         Configuration playConfiguration = Configuration.root();
         Logger.info("Application start...");
         String uid = playConfiguration.getString("aima.uid");
+        RegistryMachineContext.AIMAName = uid;
         String pwd = playConfiguration.getString("aima.pwd");
         String pid = playConfiguration.getString("aima.pid");
         String phantomjsPath = playConfiguration.getString("phantomjs.path");
@@ -24,7 +25,7 @@ public class Global extends GlobalSettings {
         RegistryMachineContext.registryMachine.setConfig(config);
         RegistryMachineContext.registryMachine.thread(threadNum);
         RegistryMachineContext.registryMachine.setTaskProcess(new SinaTaskProcess(phantomjsPath));
-
+//        RegistryMachineContext.registryMachine.addTask(new Task("asdfaz123asc", "2692194"));
     }
 
     @Override

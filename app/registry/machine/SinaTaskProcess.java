@@ -73,7 +73,7 @@ public class SinaTaskProcess extends TaskProcess {
             WebElement emailElementAlert = session.findElementByXPath("//*[@id=\"form_2\"]/ul/li[1]/p");
             //如何监控emailcheck.php
             try {
-                Thread.sleep(1500);
+                Thread.sleep(RegistryMachineContext.sleepTime);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -95,7 +95,7 @@ public class SinaTaskProcess extends TaskProcess {
             LogUtils.log(task, "验证码发送情况：" + releaseCodeMessage);
             if (!releaseCodeMessage.endsWith("秒后重新获取")) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(RegistryMachineContext.sleepTime);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -125,7 +125,7 @@ public class SinaTaskProcess extends TaskProcess {
             } else {
                 try {
                     FileUtils.copyFile(((TakesScreenshot) session).getScreenshotAs(OutputType.FILE), new File(Thread.currentThread().getId() + email + "-end-exception.png"));
-                    Thread.sleep(1000);
+                    Thread.sleep(RegistryMachineContext.sleepTime);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
