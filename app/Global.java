@@ -21,6 +21,7 @@ public class Global extends GlobalSettings {
         String phantomjsPath = playConfiguration.getString("phantomjs.path");
         int threadNum = playConfiguration.getInt("phantomjs.thread");
         Config config = new Config(uid, pwd, pid);
+        config.setPhantomjsPath(phantomjsPath);
         Logger.info("注册机配置：" + config);
         RegistryMachineContext.registryMachine.setConfig(config);
         RegistryMachineContext.registryMachine.thread(threadNum);
