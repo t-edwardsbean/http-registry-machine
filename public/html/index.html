@@ -87,25 +87,22 @@
                             </h3>
                         </li>
                         <li>
-                            <div class="input-group">
-                                <span class="input-group-addon">工作线程</span>
-                                <input type="text" class="form-control" placeholder="10"
-                                       aria-describedby="basic-addon1">
-                            </div>
-                        </li>
-                        <li>
-                            <div class="input-group">
-                                <span class="input-group-addon">邮箱类型</span>
-                                <input type="text" class="form-control" placeholder="sina.com"
-                                       aria-describedby="basic-addon1">
-                            </div>
-                        </li>
-                        <li>
-                            <div class="input-group">
-                                <span class="input-group-addon" id="basic-addon1">等待时间</span>
-                                <input type="text" class="form-control" placeholder="5000"
-                                       aria-describedby="basic-addon1">
-                            </div>
+                            <table class="table table-bordered" style="margin-bottom: 0">
+                                <tbody>
+                                <tr>
+                                    <td class="col-sm-6">工作线程</td>
+                                    <td class="col-sm-6" id="threadNum">1</td>
+                                </tr>
+                                <tr>
+                                    <td>邮箱类型</td>
+                                    <td>sina.com</td>
+                                </tr>
+                                <tr>
+                                    <td>等待时间</td>
+                                    <td id="waitTime">2000</td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </li>
                     </ul>
                     <ul class="nav nav-sidebar">
@@ -115,18 +112,22 @@
                             </h3>
                         </li>
                         <li>
-                            <div class="input-group">
-                                <span class="input-group-addon" id="basic-addon1">打码平台</span>
-                                <input type="text" class="form-control" placeholder="Username"
-                                       aria-describedby="basic-addon1">
-                            </div>
-                        </li>
-                        <li>
-                            <div class="input-group">
-                                <span class="input-group-addon" id="basic-addon1">用户名称</span>
-                                <input type="text" class="form-control" placeholder="Username"
-                                       aria-describedby="basic-addon1">
-                            </div>
+                            <table class="table table-bordered" style="margin-bottom: 0">
+                                <tbody>
+                                <tr>
+                                    <td class="col-sm-6">打码平台</td>
+                                    <td class="col-sm-6">爱玛</td>
+                                </tr>
+                                <tr>
+                                    <td>用户名称</td>
+                                    <td id="aimaUser">无</td>
+                                </tr>
+                                <tr>
+                                    <td>等待时间</td>
+                                    <td>3000</td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </li>
                     </ul>
                     <ul class="nav nav-sidebar">
@@ -136,20 +137,25 @@
                             </h3>
                         </li>
                         <li>
-                            <div class="input-group">
-                                <span class="input-group-addon" id="basic-addon1">切换方式</span>
-                                <input type="text" class="form-control" placeholder="Username"
-                                       aria-describedby="basic-addon1">
+                            <table class="table table-bordered" style="margin-bottom: 0">
+                                <tbody>
+                                <tr>
+                                    <td class="col-sm-6">切换方式</td>
+                                    <td class="col-sm-6">代理</td>
+                                </tr>
+                                <tr>
+                                    <td>代理文件</td>
+                                    <td id="proxyPath" style="word-wrap:break-word;word-break: break-all">无</td>
+                                </tr>
+                                <tr>
+                                    <td>等待时间</td>
+                                    <td>3000</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div class="alert alert-warning" style="margin-top: 20px" role="alert">
+                                代理文件中的代理格式为xx.xx.xx.xx:xx，请确保代理数量足够、有效
                             </div>
-                        </li>
-                        <li>
-                            <div class="input-group" style="padding-bottom: 30px;">
-                                <span class="input-group-addon" id="basic-addon1">代理文件</span>
-                                <input type="text" class="form-control" placeholder="Username"
-                                       aria-describedby="basic-addon1">
-                            </div>
-                        </li>
-                        <div class="alert alert-warning" role="alert">代理文件中的代理格式为xx.xx.xx.xx:xx，请确保代理数量足够、有效</div>
                     </ul>
                     <ul class="nav nav-sidebar">
                         <table class="table table-bordered">
@@ -187,8 +193,15 @@
                                     </a>
                                 </div>
                                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-3">
-                                    <button id="startBtn" type="button" class="btn btn-default navbar-btn" onclick="start()">启动</button>
-                                    <button id="stopBtn" type="button" class="btn btn-default navbar-btn disabled" onclick="stop()">停止</button>
+                                    <button id="startBtn" type="button" class="btn btn-default navbar-btn"
+                                            onclick="start()">启动
+                                    </button>
+                                    <button id="stopBtn" type="button" class="btn btn-default navbar-btn disabled"
+                                            onclick="stop()">停止
+                                    </button>
+                                    <button id="configBtn" type="button" class="btn btn-default navbar-btn navbar-right"
+                                            data-toggle="modal" data-target="#myModal">配置
+                                    </button>
                                     <!--<button id="outBtn" type="button" class="btn btn-default navbar-btn navbar-right" onclick="out()">导出</button>-->
 
                                 </div>
@@ -215,7 +228,7 @@
                     </div>
                     <div class="row" style="padding-top: 30px;">
                         <div class="log-viewer" style="padding-left: 0px; padding-right: 0px;">
-                            <div class="panel panel-default" style="height: 400px;">
+                            <div class="panel panel-default" style="height: 460px;">
                                 <div class="panel-heading">
                                     工作日志
                                 </div>
@@ -232,10 +245,114 @@
 
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">配置代理和</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-success" role="alert">
+                    请填写配置参数，并一一上传邮箱文件和代理文件
+                </div>
+
+                <table class="table-condensed designTable col-sm-offset-1">
+                    <tbody>
+                    <tr>
+                        <td>工作线程</td>
+                        <td>
+                            <input  placeholder="1" id="modal-threadNum" class="form-control field" type="text" size="5"
+                                   onkeyup="value=value.replace(/[^\d]/g,'')"
+                                   onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>等待时间</td>
+                        <td>
+                            <input  placeholder="2000" id="modal-waitTime" class="form-control field" type="text" size="5"
+                                   onkeyup="value=value.replace(/[^\d]/g,'')"
+                                   onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>邮箱文件</td>
+                        <td>
+                            <form method="POST" style="margin-top: 5px">
+                                <!--隐藏html上传组件-->
+                                <input type="file" id="email-select" name="files" class="file" style="display: none"/>
+                                <!--监控html上传组件变化，并将文件路径用这个input显示-->
+                                <input id="email-show" class="input-large" type="text"
+                                       style="height:30px;" disabled="disabled">
+                                <!--用户点击时，事件传递给真正的上传组件email-select-->
+                                <a class="btn btn-default" style="padding-left: 10px"
+                                   onclick="$('input[id=email-select]').click();">浏览</a>
+                                <button class="btn btn-default" type="submit" id="emailBtn">上传</button>
+                            </form>
+                            <!--<input id="emailFile" type="file" style="display:none">-->
+
+                            <!--<div class="input-append">-->
+                            <!--<input id="email-select" name="files" class="input-large" type="text"-->
+                            <!--style="height:30px;" disabled="disabled">-->
+                            <!--<a class="btn btn-default" style="padding-left: 10px"-->
+                            <!--onclick="$('input[id=emailFile]').click();">浏览</a>-->
+                            <!--<button class="btn btn-default" type="button" id="emailBtn">上传</button>-->
+                            <!--</div>-->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>代理文件</td>
+                        <td>
+                            <form method="POST">
+                                <!--隐藏html上传组件-->
+                                <input type="file" id="proxy-select" name="files" class="file" style="display: none"/>
+                                <!--监控html上传组件变化，并将文件路径用这个input显示-->
+                                <input id="proxy-show" class="input-large" type="text"
+                                       style="height:30px;" disabled="disabled">
+                                <!--用户点击时，事件传递给真正的上传组件email-select-->
+                                <a class="btn btn-default" style="padding-left: 10px"
+                                   onclick="$('input[id=proxy-select]').click();">浏览</a>
+                                <button class="btn btn-default" type="submit" id="proxyBtn">上传</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+
+                <!--<form class="email-up-form" method="POST">-->
+                <!--<input type="file" id="email-select" name="files" class="file"/>-->
+                <!--&lt;!&ndash;多文件选择&ndash;&gt;-->
+                <!--&lt;!&ndash;<input type="file" id="file-select" name="files[]" multiple/>&ndash;&gt;-->
+                <!--<button type="submit" id="emailBtn">Upload</button>-->
+                <!--</form>-->
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveBtn" onclick="save()" data-dismiss="modal">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="/webjars/jquery/2.1.1/jquery.min.js"></script>
 <script src="/webjars/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 <script src="/javascript/socket.js"></script>
 <script src="/javascript/script.js"></script>
+<script src="/javascript/upload.js"></script>
+<script type="text/javascript">
+    $('input[id=proxy-select]').change(function () {
+        $('#proxy-show').val($(this).val());
+    });
+    $('input[id=email-select]').change(function () {
+        $('#email-show').val($(this).val());
+    });
+</script>
 <script>
     function goBack() {
         window.history.back()

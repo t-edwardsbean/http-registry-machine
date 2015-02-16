@@ -24,9 +24,13 @@ public class Application extends Controller {
         return ok("ok");
     }
 
-    public static Result start() {
-        log.debug("controller:启动注册机");
-        if (!RegistryMachineContext.isRunning()) {
+    public static Result start(int threadNum, int waitTime) {
+        log.debug("controller:启动注册机,threadNum:{},waitTime:{}", threadNum, waitTime);
+        if (!RegistryMachineContext.isRunning) {
+            if (RegistryMachineContext.sleepTime < waitTime) {
+                RegistryMachineContext.sleepTime = waitTime;
+            }
+            RegistryMachineContext.registryMachine.thread(threadNum);
             RegistryMachineContext.start();
             return ok("ok");
         } else {
@@ -38,6 +42,11 @@ public class Application extends Controller {
         log.debug("controller:停止注册机");
         RegistryMachineContext.stop();
         return ok("ok");
+    }
+    
+    public static Result aima() {
+        log.debug("获取aima账户名称");
+        return ok(RegistryMachineContext.AIMAName);
     }
 
     //GET，绑定参数并返回JSON
