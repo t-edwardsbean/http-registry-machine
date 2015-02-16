@@ -21,6 +21,8 @@ GET         /webjars/*file           controllers.WebJarAssets.at(file)
 
 GET         /javascript/*file        controllers.Assets.at(path="/public/javascript", file)
 
+GET         /css/*file        controllers.Assets.at(path="/public/css", file)
+
 GET         /*file                   controllers.Assets.at(path="/public/html", file)
 
 POST        /upload/:name            controllers.Application.upload(name:String)
