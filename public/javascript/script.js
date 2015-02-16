@@ -60,16 +60,9 @@ function save() {
         $('#threadNum').html(threadNum);
     }
     if (waitTime !== "") {
-<<<<<<< HEAD
         $('#waitTime').html(waitTime);
     }
     if (proxyPath !== "") {
         $('#proxyPath').html(proxyPath);
-=======
-        $('#waitTime').html();
-    }
-    if (proxyPath !== "") {
-        $('#proxyPath').html();
->>>>>>> 35901c02cb1d834d0000419465bb0df379ac79b0
     }
 }
