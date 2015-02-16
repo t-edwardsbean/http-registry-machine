@@ -88,6 +88,7 @@ public class RegistryMachine {
     }
 
     public void stop() {
+        RegistryMachineContext.isRunning = false;
         service.shutdownNow();
     }
 
