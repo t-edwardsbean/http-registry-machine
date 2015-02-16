@@ -21,7 +21,7 @@ public class Application extends Controller {
     public static Logger.ALogger log = Logger.of("application");
 
     public static Result index() {
-        return ok("ok");
+        return redirect("index.html");
     }
 
     public static Result start(int threadNum, int waitTime) {
