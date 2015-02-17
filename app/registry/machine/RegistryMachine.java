@@ -69,10 +69,7 @@ public class RegistryMachine {
                 public void run() {
                     try {
                         process.process(aima, task);
-                    } catch (NoSuchElementException e) {
-                        log.error("process task error", e);
-                        LogUtils.networkException();
-                    } catch (MachineNetworkException e) {
+                    } catch (NoSuchElementException | MachineNetworkException e) {
                         log.error("process task error", e);
                         LogUtils.networkException();
                     } catch (Exception e) {

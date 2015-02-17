@@ -31,7 +31,7 @@ public class LogUtils {
     }
 
     public static void networkException() {
-        RegistryMachineContext.logger.tell(new Log("networkError", ""), ActorRef.noSender());
+        RegistryMachineContext.logger.tell(new Log("networkError", "代理不可用或者网络超时"), ActorRef.noSender());
     }
 
     public static void emailException() {
