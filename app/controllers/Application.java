@@ -38,6 +38,11 @@ public class Application extends Controller {
         }
     }
 
+    public static Result status() {
+        log.debug("查询注册机状态：", RegistryMachineContext.isRunning);
+        return ok(RegistryMachineContext.isRunning + "");
+    }
+    
     public static Result stop() {
         log.debug("controller:停止注册机");
         RegistryMachineContext.stop();

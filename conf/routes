@@ -4,6 +4,7 @@
 
 # Home page
 GET         /                        controllers.Application.index
+GET         /status                  controllers.Application.status()
 GET         /start                   controllers.Application.start(threadNum:Int?=1,waitTime:Int?=2000)
 GET         /stop                    controllers.Application.stop
 GET         /aima                    controllers.Application.aima

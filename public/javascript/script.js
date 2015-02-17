@@ -6,6 +6,19 @@ $.ajax({
     }
 });
 
+$.ajax({
+    url: "status",
+    type: 'get',
+    success: function (msg) {
+        //注册机运行中
+        if(msg === "true") {
+            $('#startBtn').addClass("disabled");
+            $('#stopBtn').removeClass("disabled");
+        }
+    }
+});
+
+
 function start() {
     var threadNum = $('#modal-threadNum').val();
     var waitTime = $('#modal-waitTime').val();
