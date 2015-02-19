@@ -6,6 +6,27 @@ $.ajax({
     }
 });
 
+$.ajax({
+    url: "proxyFile",
+    type: 'get',
+    success: function (msg) {
+        $('#proxyPath').html(msg);
+    }
+});
+
+$.ajax({
+    url: "status",
+    type: 'get',
+    success: function (msg) {
+        //注册机运行中
+        if(msg === "true") {
+            $('#startBtn').addClass("disabled");
+            $('#stopBtn').removeClass("disabled");
+        }
+    }
+});
+
+
 function start() {
     var threadNum = $('#modal-threadNum').val();
     var waitTime = $('#modal-waitTime').val();
@@ -20,8 +41,8 @@ function start() {
         url: "start",
         type: 'get',
         data: data,
-        error: function () {
-            alert("运行失败")
+        error: function (msg) {
+            alert(msg);
         },
         success: function (msg) {
             if (msg == "ok") {
@@ -42,9 +63,7 @@ function stop() {
         url: "stop",
         type: 'get',
         success: function (msg) {
-            if (msg == "ok") {
-                alert("停止成功");
-            } else {
+            if (msg !== "ok") {
                 alert("停止失败")
             }
         }
@@ -53,9 +72,17 @@ function stop() {
 
 $('#saveBtn').onclick = save;
 function save() {
+    stop();
     var threadNum = $('#modal-threadNum').val();
     var waitTime = $('#modal-waitTime').val();
     var proxyPath = $('#proxy-select').val();
+    $.ajax({
+        url: "proxyFile",
+        type: 'post',
+        data : {
+            path: proxyPath
+        }
+    });
     if (threadNum !== "") {
         $('#threadNum').html(threadNum);
     }

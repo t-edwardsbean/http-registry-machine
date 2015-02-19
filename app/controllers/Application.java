@@ -6,6 +6,7 @@ import models.User;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import play.*;
+import play.data.DynamicForm;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -31,13 +32,36 @@ public class Application extends Controller {
                 RegistryMachineContext.sleepTime = waitTime;
             }
             RegistryMachineContext.registryMachine.thread(threadNum);
-            RegistryMachineContext.start();
+            try {
+                RegistryMachineContext.start();
+            } catch (NullPointerException e) {
+                return badRequest("请重启浏览器");
+            }
             return ok("ok");
         } else {
             return badRequest("false");
         }
     }
 
+    public static Result status() {
+        log.debug("查询注册机状态：{}", RegistryMachineContext.isRunning);
+        return ok(RegistryMachineContext.isRunning + "");
+    }    
+    
+    
+    public static Result getProxyFile() {
+        log.debug("代理文件名：{}", RegistryMachineContext.proxyFileName);
+        return ok(RegistryMachineContext.proxyFileName);
+    }
+
+    public static Result setProxyFile() {
+        DynamicForm requestData = Form.form().bindFromRequest();
+        String proxyPath = requestData.get("path");
+        log.debug("代理文件名：{}", proxyPath);
+        RegistryMachineContext.proxyFileName = proxyPath;
+        return ok("ok");
+    }
+    
     public static Result stop() {
         log.debug("controller:停止注册机");
         RegistryMachineContext.stop();
@@ -45,7 +69,7 @@ public class Application extends Controller {
     }
     
     public static Result aima() {
-        log.debug("获取aima账户名称");
+        log.debug("获取aima账户名称:{}",RegistryMachineContext.AIMAName);
         return ok(RegistryMachineContext.AIMAName);
     }
 

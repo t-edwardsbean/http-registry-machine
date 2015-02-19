@@ -15,11 +15,12 @@ public class RegistryMachineContext {
     public static int sleepTime = 2000;
     public static String phantomjsPath;
     public static ActorRef logger;
+    public static String proxyFileName = "无";
     public static RegistryMachine registryMachine = new RegistryMachine();
     public static Queue<String> proxyQueue = new ConcurrentLinkedQueue<>();
     public static Queue<Email> emailQueue = new ConcurrentLinkedQueue<>();
     public static boolean isRunning = false;
-    
+
     public static void addProxy(String proxy) {
         proxyQueue.add(proxy);
     }

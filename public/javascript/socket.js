@@ -19,6 +19,7 @@ $(function () {
             var num = parseInt($("#networkError").text());
             num = num + 1;
             $("#networkError").text(num);
+            $("#logSection").append(data.value + "<br>")
         }
     };
     chatSocket.onmessage = receiveEvent
