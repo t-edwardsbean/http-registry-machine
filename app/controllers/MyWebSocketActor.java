@@ -6,13 +6,10 @@ import akka.actor.UntypedActor;
 import models.Log;
 import org.apache.commons.io.FileUtils;
 import play.Logger;
-import play.libs.Akka;
 import play.libs.Json;
 import registry.machine.RegistryMachineContext;
-import scala.concurrent.duration.Duration;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 public class MyWebSocketActor extends UntypedActor {
     public static Logger.ALogger log = Logger.of("myWebSocketActor");
@@ -23,6 +20,7 @@ public class MyWebSocketActor extends UntypedActor {
 
     private final ActorRef out;
     private File file = new File("result/out.txt");
+
     public MyWebSocketActor(ActorRef out) {
         this.out = out;
         log.debug("创建WebSocket啦");
@@ -34,19 +32,21 @@ public class MyWebSocketActor extends UntypedActor {
     }
 
     public void onReceive(Object message) throws Exception {
-        if (message instanceof Log) {
-            Log msg = (Log) message;
-            if ("email".equals(msg.getType())) {
-                FileUtils.write(file, msg.getValue().toString() + "\n", true);
-                RegistryMachineContext.result.append(msg.getValue().toString()).append("\n");
+        if (RegistryMachineContext.isRunning) {
+            if (message instanceof Log) {
+                Log msg = (Log) message;
+                if ("email".equals(msg.getType())) {
+                    FileUtils.write(file, msg.getValue().toString() + "\n", true);
+                    RegistryMachineContext.result.append(msg.getValue().toString()).append("\n");
+                }
+                log.debug("receive message:" + msg);
+                out.tell(Json.toJson(msg).toString(), self());
+            } else if (message instanceof String) {
+                log.debug("receive message:" + message);
+                out.tell(Json.toJson(new Log("log", (String) message)).toString(), self());
+            } else {
+                unhandled(message);
             }
-            log.debug("receive message:" + msg);
-            out.tell(Json.toJson(msg).toString(), self());
-        } else if (message instanceof String) {
-            log.debug("receive message:" + message);
-            out.tell(Json.toJson(new Log("log", (String)message)).toString(), self());
-        } else {
-            unhandled(message);
         }
     }
 }

@@ -29,7 +29,7 @@ public class SinaTaskProcess extends TaskProcess {
         List<String> args = new ArrayList<String>();
         args.add("--ignore-ssl-errors=yes");
         //启动phantomjs传递的命令行参数
-        if (task.getArgs() != null) {
+        if (!task.getArgs().isEmpty()) {
             LogUtils.log(task, "使用代理：" + task.getArgs().get(0));
             args.addAll(task.getArgs());
         }
@@ -41,7 +41,7 @@ public class SinaTaskProcess extends TaskProcess {
         caps.setCapability("takesScreenshot", true);
         PhantomJSDriver session = new PhantomJSDriver(caps);
         session.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-        session.manage().timeouts().pageLoadTimeout(20, TimeUnit.SECONDS);
+        session.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS);
         try {
             try {
                 session.get("https://mail.sina.com.cn/register/regmail.php");

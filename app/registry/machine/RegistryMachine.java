@@ -22,7 +22,7 @@ public class RegistryMachine {
     protected ConcurrentLinkedQueue<Task> queue = new ConcurrentLinkedQueue<Task>();
     protected TaskProcess process;
     private final AtomicLong count = new AtomicLong(0);
-
+    private Thread asynRun;
     public void cleanTask() {
         this.queue = new ConcurrentLinkedQueue<Task>();
     }
@@ -59,13 +59,13 @@ public class RegistryMachine {
             RegistryMachineContext.isRunning = false;
             return;
         }
-        new Thread(new Runnable() {
+        asynRun = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
 
                     int tryNum = 3;
-                    while (tryNum > 0) {
+                    while (tryNum > 0 && !Thread.interrupted()) {
                         for (final Task task : queue) {
                             final String proxy = RegistryMachineContext.proxyQueue.poll();
                             if (proxy != null) {
@@ -94,22 +94,23 @@ public class RegistryMachine {
                             service.shutdown();
                             service.awaitTermination(1, TimeUnit.DAYS);
                         } catch (InterruptedException e) {
-                            LogUtils.log("注册机超时，请重启");
+                            break;
                         } finally {
                             tryNum--;
                         }
                     }
-                }finally {
+                } finally {
                     LogUtils.log("注册机运行结束");
                 }
             }
-        }).start();
-
+        });
+        asynRun.start();
     }
 
     public void stop() {
         RegistryMachineContext.isRunning = false;
         service.shutdownNow();
+        asynRun.interrupt();
     }
 
     @Override
