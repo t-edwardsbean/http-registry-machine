@@ -198,6 +198,8 @@
                                     <button id="configBtn" type="button" class="btn btn-default navbar-btn navbar-right"
                                             data-toggle="modal" data-target="#myModal">配置
                                     </button>
+                                    <a href="http://localhost:9000/download" style="margin-right: 10px" class="btn btn-default navbar-btn navbar-right">导出
+                                    </a>
                                     <!--<button id="outBtn" type="button" class="btn btn-default navbar-btn navbar-right" onclick="out()">导出</button>-->
 
                                 </div>
@@ -262,7 +264,7 @@
                     <tr>
                         <td>工作线程</td>
                         <td>
-                            <input  placeholder="1" id="modal-threadNum" class="form-control field" type="text" size="5"
+                            <input placeholder="1" id="modal-threadNum" class="form-control field" type="text" size="5"
                                    onkeyup="value=value.replace(/[^\d]/g,'')"
                                    onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))">
                         </td>
@@ -270,7 +272,8 @@
                     <tr>
                         <td>等待时间</td>
                         <td>
-                            <input  placeholder="2000" id="modal-waitTime" class="form-control field" type="text" size="5"
+                            <input placeholder="2000" id="modal-waitTime" class="form-control field" type="text"
+                                   size="5"
                                    onkeyup="value=value.replace(/[^\d]/g,'')"
                                    onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))">
                         </td>
@@ -331,7 +334,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="saveBtn" onclick="save()" data-dismiss="modal">保存</button>
+                <button type="button" class="btn btn-primary" id="saveBtn" onclick="save()" data-dismiss="modal">保存
+                </button>
             </div>
         </div>
     </div>

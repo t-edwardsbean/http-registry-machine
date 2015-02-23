@@ -43,6 +43,11 @@ public class Application extends Controller {
         }
     }
 
+    public static Result download() {
+        response().setContentType("application/x-download");
+        response().setHeader("Content-disposition","attachment; filename=result.txt");
+        return ok(RegistryMachineContext.result.toString());
+    }
     public static Result status() {
         log.debug("查询注册机状态：{}", RegistryMachineContext.isRunning);
         return ok(RegistryMachineContext.isRunning + "");
