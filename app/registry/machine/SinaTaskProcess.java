@@ -145,7 +145,7 @@ public class SinaTaskProcess extends TaskProcess {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            session.close();
+            session.quit();
         }
     }
 }
