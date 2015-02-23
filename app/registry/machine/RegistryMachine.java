@@ -62,36 +62,44 @@ public class RegistryMachine {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                for (final Task task : queue) {
-                    final String proxy = RegistryMachineContext.proxyQueue.poll();
-                    if (proxy != null) {
-                        task.getArgs().add(proxy);
-                        RegistryMachineContext.proxyQueue.add(proxy);
-                    }
-                    service.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                process.process(aima, task);
-                            } catch (NoSuchElementException | MachineNetworkException e) {
-                                RegistryMachineContext.proxyQueue.remove(proxy);
-                                log.error("process task error", e);
-                                LogUtils.networkException(e);
-                            } catch (Exception e) {
-                                log.error("process task error", e);
-                                LogUtils.log(e.getMessage());
-                            } finally {
-                                count.incrementAndGet();
-                            }
-                        }
-                    });
-                }
                 try {
-                    service.shutdown();
-                    service.awaitTermination(1, TimeUnit.DAYS);
-                } catch (InterruptedException e) {
-                    LogUtils.log("注册机超时，请重启");
-                } finally {
+
+                    int tryNum = 3;
+                    while (tryNum > 0) {
+                        for (final Task task : queue) {
+                            final String proxy = RegistryMachineContext.proxyQueue.poll();
+                            if (proxy != null) {
+                                task.getArgs().add(proxy);
+                                RegistryMachineContext.proxyQueue.add(proxy);
+                            }
+                            service.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        process.process(aima, task);
+                                    } catch (NoSuchElementException | MachineNetworkException e) {
+                                        RegistryMachineContext.proxyQueue.remove(proxy);
+                                        log.error("process task error", e);
+                                        LogUtils.networkException(e);
+                                    } catch (Exception e) {
+                                        log.error("process task error", e);
+                                        LogUtils.log(e.getMessage());
+                                    } finally {
+                                        count.incrementAndGet();
+                                    }
+                                }
+                            });
+                        }
+                        try {
+                            service.shutdown();
+                            service.awaitTermination(1, TimeUnit.DAYS);
+                        } catch (InterruptedException e) {
+                            LogUtils.log("注册机超时，请重启");
+                        } finally {
+                            tryNum--;
+                        }
+                    }
+                }finally {
                     LogUtils.log("注册机运行结束");
                 }
             }
