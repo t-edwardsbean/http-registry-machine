@@ -36,8 +36,8 @@ public class MyWebSocketActor extends UntypedActor {
             if (message instanceof Log) {
                 Log msg = (Log) message;
                 if ("email".equals(msg.getType())) {
-                    FileUtils.write(file, msg.getValue().toString() + "\n", true);
-                    RegistryMachineContext.result.append(msg.getValue().toString()).append("\n");
+                    FileUtils.write(file, msg.getValue().toString() + "\r\n", true);
+                    RegistryMachineContext.result.append(msg.getValue().toString()).append("\r\n");
                 }
                 log.debug("receive message:" + msg);
                 out.tell(Json.toJson(msg).toString(), self());
