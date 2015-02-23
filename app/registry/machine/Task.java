@@ -1,5 +1,6 @@
 package registry.machine;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,7 +9,7 @@ import java.util.List;
 public class Task {
     private String email;
     private String password;
-    private List<String> args;
+    private List<String> args = new ArrayList<>();
 
     public Task(String email, String password) {
         this.email = email;
@@ -38,6 +39,23 @@ public class Task {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Task task = (Task) o;
+
+        if (!email.equals(task.email)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return email.hashCode();
     }
 
     @Override

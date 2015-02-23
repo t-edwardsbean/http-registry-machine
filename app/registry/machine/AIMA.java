@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +21,7 @@ public class AIMA {
     private String AIMA_GET_PHONE_URL = "http://api.f02.cn/http.do?action=getMobilenum&pid=%s&uid=%s&mobile=&size=1&token=";
     private String AIMA_GET_CODE_URL = "http://api.f02.cn/http.do?action=getVcodeAndReleaseMobile&uid=%s&token=%s&mobile=";
     private String AIMA_IGNORE = "http://api.f02.cn/http.do?action=addIgnoreList&uid=%s&token=%s&pid=%s&mobiles=";
-
+    private Random random = new Random(2000);
 
     public AIMA(String uid, String pwd, String pid) {
         this.uid = uid;
@@ -59,6 +60,11 @@ public class AIMA {
 
     public String getPhone(Task task) {
         log.debug("请求手机号:" + AIMA_GET_PHONE_URL);
+        try {
+            Thread.sleep(random.nextInt(2000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         LogUtils.log(task, "请求手机号:" + AIMA_GET_PHONE_URL);
         String getPhoneResult = HttpUtils.Get(AIMA_GET_PHONE_URL);
         int phoneLength = getPhoneResult.split("\\|").length;

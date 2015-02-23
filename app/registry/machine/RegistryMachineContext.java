@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Created by edwardsbean on 15-2-12.
  */
 public class RegistryMachineContext {
+    public static boolean isDebug = false;
     public static String AIMAName;
     public static int sleepTime = 2000;
     public static String phantomjsPath;

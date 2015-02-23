@@ -34,6 +34,10 @@ public class LogUtils {
         RegistryMachineContext.logger.tell(new Log("networkError", "代理不可用或者网络超时"), ActorRef.noSender());
     }
 
+    public static void networkException(Exception e) {
+        RegistryMachineContext.logger.tell(new Log("networkError", e.getMessage()), ActorRef.noSender());
+    }
+
     public static void emailException() {
         RegistryMachineContext.logger.tell(new Log("emailException", ""), ActorRef.noSender());
     }

@@ -5,11 +5,10 @@ import org.openqa.selenium.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -23,6 +22,10 @@ public class RegistryMachine {
     protected ConcurrentLinkedQueue<Task> queue = new ConcurrentLinkedQueue<Task>();
     protected TaskProcess process;
     private final AtomicLong count = new AtomicLong(0);
+
+    public void cleanTask() {
+        this.queue = new ConcurrentLinkedQueue<Task>();
+    }
 
     public void setConfig(Config config) {
         this.config = config;
@@ -56,32 +59,44 @@ public class RegistryMachine {
             RegistryMachineContext.isRunning = false;
             return;
         }
-        for (final Task task : queue) {
-            String proxy = RegistryMachineContext.proxyQueue.poll();
-            if (proxy != null) {
-                List<String> args = new ArrayList<>();
-                args.add(proxy);
-                task.setArgs(args);
-                RegistryMachineContext.proxyQueue.add(proxy);
-            }
-            service.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        process.process(aima, task);
-                    } catch (NoSuchElementException | MachineNetworkException e) {
-                        log.error("process task error", e);
-                        LogUtils.networkException();
-                    } catch (Exception e) {
-                        log.error("process task error", e);
-                        LogUtils.log(e.getMessage());
-                    } finally {
-                        count.incrementAndGet();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (final Task task : queue) {
+                    final String proxy = RegistryMachineContext.proxyQueue.poll();
+                    if (proxy != null) {
+                        task.getArgs().add(proxy);
+                        RegistryMachineContext.proxyQueue.add(proxy);
                     }
+                    service.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                process.process(aima, task);
+                            } catch (NoSuchElementException | MachineNetworkException e) {
+                                RegistryMachineContext.proxyQueue.remove(proxy);
+                                log.error("process task error", e);
+                                LogUtils.networkException(e);
+                            } catch (Exception e) {
+                                log.error("process task error", e);
+                                LogUtils.log(e.getMessage());
+                            } finally {
+                                count.incrementAndGet();
+                            }
+                        }
+                    });
                 }
-            });
-        }
-        service.shutdown();
+                try {
+                    service.shutdown();
+                    service.awaitTermination(1, TimeUnit.DAYS);
+                } catch (InterruptedException e) {
+                    LogUtils.log("注册机超时，请重启");
+                } finally {
+                    LogUtils.log("注册机运行结束");
+                }
+            }
+        }).start();
+
     }
 
     public void stop() {

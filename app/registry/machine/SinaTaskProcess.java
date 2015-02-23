@@ -30,6 +30,7 @@ public class SinaTaskProcess extends TaskProcess {
         args.add("--ignore-ssl-errors=yes");
         //启动phantomjs传递的命令行参数
         if (task.getArgs() != null) {
+            LogUtils.log(task, "使用代理：" + task.getArgs().get(0));
             args.addAll(task.getArgs());
         }
         caps.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, args.toArray(new String[args.size()]));
@@ -40,13 +41,15 @@ public class SinaTaskProcess extends TaskProcess {
         caps.setCapability("takesScreenshot", true);
         PhantomJSDriver session = new PhantomJSDriver(caps);
         session.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-        session.manage().timeouts().pageLoadTimeout(5, TimeUnit.SECONDS);
+        session.manage().timeouts().pageLoadTimeout(20, TimeUnit.SECONDS);
         try {
             try {
                 session.get("https://mail.sina.com.cn/register/regmail.php");
             } catch (Exception e) {
-                throw new MachineNetworkException(LogUtils.format(task, "网络超时，或者代理不可用"), e);
+                throw new MachineNetworkException(LogUtils.format(task, "网络超时，或者代理不可用:" + task.getArgs().get(0)), e);
             }
+            //监听alert
+//            ((JavascriptExecutor) session).executeScript("var lastAlert = undefined;window.alert = function(msg){lastAlert = msg;};");
             String beginTitle = session.getTitle();
             if (beginTitle.isEmpty()) {
                 throw new MachineNetworkException(LogUtils.format(task, "找不到登陆头,网路超时或代理不可用"));
@@ -79,6 +82,7 @@ public class SinaTaskProcess extends TaskProcess {
             }
             if (!emailElementAlert.getText().isEmpty()) {
                 LogUtils.emailException();
+                RegistryMachineContext.registryMachine.queue.remove(task);
                 throw new MachineException(LogUtils.format(task, "邮箱不合法：" + emailElementAlert.getText()));
             } else {
                 log.debug(Thread.currentThread() + "邮箱ok,继续");
@@ -122,9 +126,12 @@ public class SinaTaskProcess extends TaskProcess {
                 log.debug(Thread.currentThread() + "注册成功，账号：{},密码：{}", email, password);
                 LogUtils.log(task, "注册成功，账号：" + email + ",密码：" + password);
                 LogUtils.successEmail(task);
+                RegistryMachineContext.registryMachine.queue.remove(task);
             } else {
+//                Object alert =  ((JavascriptExecutor) session).executeScript("return lastAlert");
+
                 try {
-                    FileUtils.copyFile(((TakesScreenshot) session).getScreenshotAs(OutputType.FILE), new File(Thread.currentThread().getId() + email + "-end-exception.png"));
+                    FileUtils.copyFile(((TakesScreenshot) session).getScreenshotAs(OutputType.FILE), new File("debug/" + Thread.currentThread().getId() + email + "-end-exception.png"));
                     Thread.sleep(RegistryMachineContext.sleepTime);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -132,6 +139,12 @@ public class SinaTaskProcess extends TaskProcess {
                 throw new MachineException(LogUtils.format(task, "注册失败"));
             }
         } finally {
+            try {
+                FileUtils.copyFile(((TakesScreenshot) session).getScreenshotAs(OutputType.FILE), new File("debug/" + task.getEmail() + "-debug.png"));
+                Thread.sleep(RegistryMachineContext.sleepTime);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             session.close();
         }
     }

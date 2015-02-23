@@ -5,6 +5,9 @@ $(function () {
         console.log(event.data);
         var data = JSON.parse(event.data);
         if (data.type === "log") {
+            if(data.value === "注册机运行结束" || data.value === "没有邮箱文件，请上传") {
+                $('#stopBtn').click();
+            }
             $("#logSection").append(data.value + "<br>")
         } else if (data.type === "email") {
             var num = parseInt($("#successNum").text());
@@ -14,7 +17,7 @@ $(function () {
         } else if (data.type === "emailException") {
             var num = parseInt($("#emailException").text());
             num = num + 1;
-            $("#userExist").text(num);
+            $("#emailException").text(num);
         } else if (data.type === "networkError") {
             var num = parseInt($("#networkError").text());
             num = num + 1;

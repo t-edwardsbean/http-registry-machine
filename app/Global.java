@@ -18,11 +18,14 @@ public class Global extends GlobalSettings {
         RegistryMachineContext.AIMAName = uid;
         String pwd = playConfiguration.getString("aima.pwd");
         String pid = playConfiguration.getString("aima.pid");
+        boolean isDebug = playConfiguration.getBoolean("phantomjs.debug");
         String phantomjsPath = playConfiguration.getString("phantomjs.path");
         int threadNum = playConfiguration.getInt("phantomjs.thread");
         Config config = new Config(uid, pwd, pid);
         config.setPhantomjsPath(phantomjsPath);
         Logger.info("注册机配置：" + config);
+        Logger.info("是否调试模式：{}", isDebug);
+        RegistryMachineContext.isDebug = isDebug;
         RegistryMachineContext.registryMachine.setConfig(config);
         RegistryMachineContext.registryMachine.thread(threadNum);
         RegistryMachineContext.registryMachine.setTaskProcess(new SinaTaskProcess(phantomjsPath));

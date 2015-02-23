@@ -41,8 +41,8 @@ function start() {
         url: "start",
         type: 'get',
         data: data,
-        error: function (msg) {
-            alert(msg);
+        error: function (xhr, ajaxOptions, thrownError) {
+            alert(xhr.responseText);
         },
         success: function (msg) {
             if (msg == "ok") {
@@ -80,6 +80,8 @@ function save() {
         url: "proxyFile",
         type: 'post',
         data : {
+            threadNum: threadNum,
+            waitTime: waitTime,
             path: proxyPath
         }
     });

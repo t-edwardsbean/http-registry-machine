@@ -7,7 +7,11 @@ function uploadEmail(event) {
     event.preventDefault();
     event.stopPropagation();
     var fileSelect = document.getElementById('email-select');
-
+    $('#successEmail').html("");
+    $("#logSection").html("");
+    $("#successNum").text(0);
+    $("#userExist").text(0);
+    $("#networkError").text(0);
     // The rest of the code will go here...
     // Get the selected files from the input.
     var files = fileSelect.files;

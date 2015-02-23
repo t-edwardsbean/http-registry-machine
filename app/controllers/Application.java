@@ -6,7 +6,6 @@ import models.User;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import play.*;
 import play.data.DynamicForm;
 import play.data.Form;
@@ -29,7 +28,6 @@ public class Application extends Controller {
 
     public static Result start(int threadNum, int waitTime) {
         log.debug("controller:启动注册机,threadNum:{},waitTime:{}", threadNum, waitTime);
-        if (!RegistryMachineContext.isRunning) {
             if (RegistryMachineContext.sleepTime < waitTime) {
                 RegistryMachineContext.sleepTime = waitTime;
             }
@@ -37,12 +35,9 @@ public class Application extends Controller {
             try {
                 RegistryMachineContext.start();
             } catch (NullPointerException e) {
-                return badRequest("请重启浏览器");
+                return internalServerError("请刷新浏览器");
             }
-            return ok("ok");
-        } else {
-            return badRequest("false");
-        }
+        return ok("ok");
     }
 
     public static Result download() {
@@ -112,6 +107,11 @@ public class Application extends Controller {
                 iterator = FileUtils.lineIterator(file);
             } catch (IOException e) {
                 return badRequest("文件错误");
+            }
+            if ("email".equals(name)) {
+                //清理
+                RegistryMachineContext.registryMachine.cleanTask();
+                RegistryMachineContext.result = new StringBuilder();
             }
             while (iterator.hasNext()) {
                 String line = iterator.nextLine();
