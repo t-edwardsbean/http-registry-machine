@@ -5,6 +5,8 @@ import akka.actor.Props;
 import models.User;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import play.*;
 import play.data.DynamicForm;
 import play.data.Form;
@@ -115,15 +117,9 @@ public class Application extends Controller {
                 String line = iterator.nextLine();
                 log.debug("{}内容：{}", name, line);
                 if ("email".equals(name)) {
-                    String[] splits = line.split(",");
-                    if (splits.length != 2) {
-                        return badRequest("该行文件内容格式不对：" + line);
-                    } else {
-                        String emailName = splits[0];
-                        String emailPwd = splits[1];
-                        Task task = new Task(emailName, emailPwd);
-                        RegistryMachineContext.registryMachine.addTask(task);
-                    }
+                    String emailPwd = RandomStringUtils.randomAlphanumeric(8);
+                    Task task = new Task(line, emailPwd);
+                    RegistryMachineContext.registryMachine.addTask(task);
                 } else if ("proxy".equals(name)) {
                     String[] splits = line.split(":");
                     if (splits.length != 2) {

@@ -33,9 +33,9 @@ function uploadEmail(event) {
     xhr.onload = function () {
         if (xhr.status === 200) {
             // File(s) uploaded.
-            alert('upload success:' + xhr.responseText)
+            alert('设置邮箱账号成功:' + xhr.responseText)
         } else {
-            alert('An error occurred!:' + + xhr.responseText);
+            alert('校验邮箱格式失败!:' + + xhr.responseText);
         }
     };
     // Send the Data.

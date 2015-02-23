@@ -39,4 +39,13 @@ public class Task {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", args=" + args +
+                '}';
+    }
 }
