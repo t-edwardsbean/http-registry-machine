@@ -49,7 +49,7 @@ public class SinaTaskProcess extends TaskProcess {
                 throw new MachineNetworkException(LogUtils.format(task, "网络超时，或者代理不可用:" + task.getArgs().get(0)), e);
             }
             //监听alert
-//            ((JavascriptExecutor) session).executeScript("var lastAlert = undefined;window.alert = function(msg){lastAlert = msg;};");
+            session.executeScript("window.alert = function(message) {window.lastAlert = message;};");
             String beginTitle = session.getTitle();
             if (beginTitle.isEmpty()) {
                 throw new MachineNetworkException(LogUtils.format(task, "找不到登陆头,网路超时或代理不可用"));
@@ -136,7 +136,11 @@ public class SinaTaskProcess extends TaskProcess {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                throw new MachineException(LogUtils.format(task, "注册失败"));
+                Object result = session.executeScript("return window.lastAlert;");
+                if (result != null && result.toString().contains("该邮箱名已被占用")) {
+                    LogUtils.emailException();
+                }
+                throw new MachineException(LogUtils.format(task, "注册失败:" + result));
             }
         } finally {
             try {

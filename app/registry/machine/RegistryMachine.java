@@ -67,7 +67,6 @@ public class RegistryMachine {
                 try {
                     final Semaphore semaphore = new Semaphore(threadNum);
                     while (!Thread.currentThread().isInterrupted()) {
-                        LogUtils.log("分配任务");
                         while (!queue.isEmpty()) {
                             final Task task = queue.poll();
                             final String proxy = RegistryMachineContext.proxyQueue.poll();
@@ -89,6 +88,7 @@ public class RegistryMachine {
                                         queue.add(task);
                                         log.error("process task error", e);
                                         LogUtils.networkException(e);
+                                        //TODO 搞清楚注册失败的原因，是否需要重试
                                     } catch (Exception e) {
                                         log.error("process task error", e);
                                         LogUtils.log(e.getMessage());
