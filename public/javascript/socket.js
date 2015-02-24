@@ -8,6 +8,13 @@ $(function () {
             if(data.value === "注册机运行结束" || data.value === "没有邮箱文件，请上传") {
                 $('#stopBtn').click();
             }
+            if(data.value.indexOf("移除无效代理") !== -1) {
+                var num = parseInt($("#proxyNum").text());
+                num = num - 1;
+                if(num >= 0) {
+                    $("#proxyNum").text(num);
+                }
+            }
             $("#logSection").append(data.value + "<br>")
         } else if (data.type === "email") {
             var num = parseInt($("#successNum").text());

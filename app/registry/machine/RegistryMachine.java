@@ -5,10 +5,8 @@ import org.openqa.selenium.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Queue;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -19,10 +17,13 @@ public class RegistryMachine {
     private Config config;
     private AIMA aima;
     private ExecutorService service;
-    protected ConcurrentLinkedQueue<Task> queue = new ConcurrentLinkedQueue<Task>();
+    protected Queue<Task> queue = new LinkedBlockingQueue<>();
     protected TaskProcess process;
     private final AtomicLong count = new AtomicLong(0);
     private Thread asynRun;
+    private int threadNum;
+    ;
+
     public void cleanTask() {
         this.queue = new ConcurrentLinkedQueue<Task>();
     }
@@ -36,6 +37,7 @@ public class RegistryMachine {
     }
 
     public void thread(int num) {
+        this.threadNum = num;
         this.service = Executors.newFixedThreadPool(num);
     }
 
@@ -50,23 +52,24 @@ public class RegistryMachine {
     }
 
     public void run() {
-        RegistryMachineContext.isRunning = true;
-        init();
-        log.debug("启动注册机");
-        RegistryMachineContext.logger.tell("启动注册机", ActorRef.noSender());
+        RegistryMachineContext.isRunning.set(true);
+        log.debug("启动注册机：" + RegistryMachineContext.isRunning.get());
         if (queue.isEmpty()) {
-            LogUtils.log("没有邮箱文件，请上传");
-            RegistryMachineContext.isRunning = false;
+            log.debug("没有邮箱文件，请上传");
+            RegistryMachineContext.logger.tell("没有邮箱文件，请上传", ActorRef.noSender());
             return;
         }
+        init();
+        RegistryMachineContext.logger.tell("启动注册机", ActorRef.noSender());
         asynRun = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-
-                    int tryNum = 3;
-                    while (tryNum > 0 && !Thread.interrupted()) {
-                        for (final Task task : queue) {
+                    final Semaphore semaphore = new Semaphore(threadNum);
+                    while (!Thread.currentThread().isInterrupted()) {
+                        LogUtils.log("分配任务");
+                        while (!queue.isEmpty()) {
+                            final Task task = queue.poll();
                             final String proxy = RegistryMachineContext.proxyQueue.poll();
                             if (proxy != null) {
                                 task.getArgs().add(proxy);
@@ -76,27 +79,42 @@ public class RegistryMachine {
                                 @Override
                                 public void run() {
                                     try {
+                                        semaphore.acquire();
                                         process.process(aima, task);
                                     } catch (NoSuchElementException | MachineNetworkException e) {
+                                        //移除无效代理
+                                        LogUtils.log("移除无效代理：" + proxy);
                                         RegistryMachineContext.proxyQueue.remove(proxy);
+                                        //网络异常，重试
+                                        queue.add(task);
                                         log.error("process task error", e);
                                         LogUtils.networkException(e);
                                     } catch (Exception e) {
                                         log.error("process task error", e);
                                         LogUtils.log(e.getMessage());
                                     } finally {
+                                        semaphore.release();
                                         count.incrementAndGet();
                                     }
                                 }
                             });
                         }
+                        //让任务初始化并运行
                         try {
-                            service.shutdown();
-                            service.awaitTermination(1, TimeUnit.DAYS);
+                            Thread.sleep(2000);
                         } catch (InterruptedException e) {
                             break;
-                        } finally {
-                            tryNum--;
+                        }
+                        //邮箱池为空，而serviceExecutor任务还在排队等待执行
+//                        while (queue.isEmpty() && semaphore.availablePermits() != threadNum && !Thread.currentThread().isInterrupted()) {
+//                            try {
+//                                Thread.sleep(1000);
+//                            } catch (InterruptedException e) {
+//                                break;
+//                            }
+//                        }
+                        if (queue.isEmpty() && semaphore.availablePermits() == threadNum) {
+                            break;
                         }
                     }
                 } finally {
@@ -108,7 +126,7 @@ public class RegistryMachine {
     }
 
     public void stop() {
-        RegistryMachineContext.isRunning = false;
+        RegistryMachineContext.isRunning.set(false);
         service.shutdownNow();
         asynRun.interrupt();
     }

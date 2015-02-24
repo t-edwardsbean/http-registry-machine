@@ -85,6 +85,14 @@ function save() {
             path: proxyPath
         }
     });
+    $.ajax({
+        url: "proxyNum",
+        type: 'get',
+        success: function (msg) {
+            $('#proxyNum').html(msg);
+        }
+    });
+
     if (threadNum !== "") {
         $('#threadNum').html(threadNum);
     }

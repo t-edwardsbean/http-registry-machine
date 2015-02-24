@@ -46,10 +46,13 @@ public class Application extends Controller {
         return ok(RegistryMachineContext.result.toString());
     }
     public static Result status() {
-        log.debug("查询注册机状态：{}", RegistryMachineContext.isRunning);
-        return ok(RegistryMachineContext.isRunning + "");
+        log.debug("查询注册机状态：{}", RegistryMachineContext.isRunning.get());
+        return ok(RegistryMachineContext.isRunning.get() + "");
     }    
-    
+
+    public static Result proxyNum() {
+        return ok(RegistryMachineContext.proxyQueue.size() + "");
+    }
     
     public static Result getProxyFile() {
         log.debug("代理文件名：{}", RegistryMachineContext.proxyFileName);
@@ -112,6 +115,8 @@ public class Application extends Controller {
                 //清理
                 RegistryMachineContext.registryMachine.cleanTask();
                 RegistryMachineContext.result = new StringBuilder();
+            } else if ("proxy".equals(name)) {
+                RegistryMachineContext.proxyQueue.clear();
             }
             while (iterator.hasNext()) {
                 String line = iterator.nextLine();

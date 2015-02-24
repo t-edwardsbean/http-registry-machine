@@ -5,6 +5,7 @@
 # Home page
 GET         /                        controllers.Application.index
 GET         /status                  controllers.Application.status
+GET         /proxyNum                controllers.Application.proxyNum
 GET         /proxyFile               controllers.Application.getProxyFile
 POST        /proxyFile               controllers.Application.setProxyFile
 GET         /start                   controllers.Application.start(threadNum:Int?=1,waitTime:Int?=2000)
@@ -13,7 +14,7 @@ GET         /aima                    controllers.Application.aima
 GET         /hello/:name             controllers.Application.hello(name:String)
 POST        /hello                   controllers.Application.post
 GET         /socket                  controllers.Application.socket
-GET         /download                   controllers.Application.download
+GET         /download                controllers.Application.download
 # Versioned Assets
 GET         /vassets/*file           controllers.Assets.versioned(path="/public", file: Asset)
 

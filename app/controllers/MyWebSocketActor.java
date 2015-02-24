@@ -24,25 +24,22 @@ public class MyWebSocketActor extends UntypedActor {
     public MyWebSocketActor(ActorRef out) {
         this.out = out;
         log.debug("创建WebSocket啦");
-    }
-
-    @Override
-    public void preStart() throws Exception {
         RegistryMachineContext.logger = getSelf();
     }
 
     public void onReceive(Object message) throws Exception {
-        if (RegistryMachineContext.isRunning) {
+        //只输出注册机在运行时的日志
+        log.debug("receive message:" + message);
+        log.debug("是否输出日志：" + RegistryMachineContext.isRunning.get());
+        if (RegistryMachineContext.isRunning.get()) {
             if (message instanceof Log) {
                 Log msg = (Log) message;
                 if ("email".equals(msg.getType())) {
                     FileUtils.write(file, msg.getValue().toString() + "\r\n", true);
                     RegistryMachineContext.result.append(msg.getValue().toString()).append("\r\n");
                 }
-                log.debug("receive message:" + msg);
                 out.tell(Json.toJson(msg).toString(), self());
             } else if (message instanceof String) {
-                log.debug("receive message:" + message);
                 out.tell(Json.toJson(new Log("log", (String) message)).toString(), self());
             } else {
                 unhandled(message);

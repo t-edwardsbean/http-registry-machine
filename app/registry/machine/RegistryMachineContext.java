@@ -6,6 +6,7 @@ import models.Email;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by edwardsbean on 15-2-12.
@@ -20,7 +21,7 @@ public class RegistryMachineContext {
     public static RegistryMachine registryMachine = new RegistryMachine();
     public static Queue<String> proxyQueue = new ConcurrentLinkedQueue<>();
     public static Queue<Email> emailQueue = new ConcurrentLinkedQueue<>();
-    public static boolean isRunning = false;
+    public static AtomicBoolean isRunning = new AtomicBoolean(false);
     public static StringBuilder result = new StringBuilder();
 
     public static void addProxy(String proxy) {
@@ -45,6 +46,6 @@ public class RegistryMachineContext {
 
     public static void stop() {
         registryMachine.stop();
-        isRunning = false;
+        isRunning.set(false);
     }
 }
