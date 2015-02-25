@@ -2,6 +2,7 @@ package registry.machine;
 
 import akka.actor.ActorRef;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +90,10 @@ public class RegistryMachine {
                                         log.error("process task error", e);
                                         LogUtils.networkException(e);
                                         //TODO 搞清楚注册失败的原因，是否需要重试
+                                    } catch (UnreachableBrowserException e) {
+                                        //未正常启动phantomjs,重试
+                                        queue.add(task);
+                                        log.error("process task error", e);
                                     } catch (Exception e) {
                                         log.error("process task error", e);
                                         LogUtils.log(e.getMessage());
@@ -113,6 +118,7 @@ public class RegistryMachine {
 //                                break;
 //                            }
 //                        }
+                        //全部任务运行完成
                         if (queue.isEmpty() && semaphore.availablePermits() == threadNum) {
                             break;
                         }
