@@ -23,6 +23,7 @@ public class RegistryMachineContext {
     public static Queue<Email> emailQueue = new ConcurrentLinkedQueue<>();
     public static AtomicBoolean isRunning = new AtomicBoolean(false);
     public static StringBuilder result = new StringBuilder();
+    public static AIMA aima;
 
     public static void addProxy(String proxy) {
         proxyQueue.add(proxy);

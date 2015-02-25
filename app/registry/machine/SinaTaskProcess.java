@@ -1,18 +1,9 @@
 package registry.machine;
 
-import akka.actor.ActorRef;
-import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by edwardsbean on 2015/2/9 0009.
@@ -24,7 +15,7 @@ public class SinaTaskProcess extends TaskProcess {
         super(phantomjsPath);
     }
 
-    public void process(AIMA aima, Task task) throws Exception {
+    public void process(Task task) throws Exception {
         PhantomJSDriver session = getSession(task);
         try {
             try {
@@ -59,11 +50,7 @@ public class SinaTaskProcess extends TaskProcess {
             passwordElement.sendKeys(password);
             WebElement emailElementAlert = session.findElementByXPath("//*[@id=\"form_2\"]/ul/li[1]/p");
             //如何监控emailcheck.php
-            try {
-                Thread.sleep(RegistryMachineContext.sleepTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Thread.sleep(RegistryMachineContext.sleepTime);
             if (!emailElementAlert.getText().isEmpty()) {
                 LogUtils.emailException();
                 RegistryMachineContext.registryMachine.queue.remove(task);
@@ -73,7 +60,7 @@ public class SinaTaskProcess extends TaskProcess {
                 LogUtils.log(task, "邮箱ok,继续");
             }
             WebElement phoneElement = session.findElementByCssSelector("#phoneNum_2");
-            String phone = aima.getPhone(task);
+            String phone = RegistryMachineContext.aima.getPhone(task);
             phoneElement.sendKeys(phone);
             WebElement releaseCodeElement = session.findElementByCssSelector("#getCode_2");
             releaseCodeElement.click();
@@ -82,27 +69,19 @@ public class SinaTaskProcess extends TaskProcess {
             log.debug("验证码发送情况：" + releaseCodeMessage);
             LogUtils.log(task, "验证码发送情况：" + releaseCodeMessage);
             if (!releaseCodeMessage.endsWith("秒后重新获取")) {
-                try {
-                    Thread.sleep(RegistryMachineContext.sleepTime);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Thread.sleep(RegistryMachineContext.sleepTime);
                 releaseCodeElement.click();
                 log.debug("再次点击获取验证码：" + session.findElementByCssSelector("#getCode_2").getText());
                 LogUtils.log(task, "再次点击获取验证码：" + session.findElementByCssSelector("#getCode_2").getText());
             }
-            String code = aima.getPhoneCode(task, phone);
+            String code = RegistryMachineContext.aima.getPhoneCode(task, phone);
             if (code != null) {
                 WebElement codeElement = session.findElementByCssSelector("#checkCode_2");
                 codeElement.sendKeys(code);
             }
             WebElement submit = session.findElementByCssSelector("#openNow_2");
             submit.click();
-            try {
-                Thread.sleep(4000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Thread.sleep(4000);
             String endTitle = session.getTitle();
             log.debug("成功后跳转：" + endTitle);
             LogUtils.log(task, "成功后跳转：" + endTitle);

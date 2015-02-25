@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RegistryMachine {
     private static Logger log = LoggerFactory.getLogger(RegistryMachine.class);
     private Config config;
-    private AIMA aima;
     private ExecutorService service;
     protected Queue<Task> queue = new LinkedBlockingQueue<>();
     protected TaskProcess process;
@@ -34,7 +33,7 @@ public class RegistryMachine {
     }
 
     private void init() {
-        this.aima = new AIMA(config.getUid(), config.getPwd(), config.getPid());
+        RegistryMachineContext.aima = new AIMA(config.getUid(), config.getPwd(), config.getPid());
     }
 
     public void thread(int num) {
@@ -80,7 +79,7 @@ public class RegistryMachine {
                                 public void run() {
                                     try {
                                         semaphore.acquire();
-                                        process.process(aima, task);
+                                        process.process(task);
                                     } catch (NoSuchElementException | MachineNetworkException e) {
                                         //移除无效代理
                                         LogUtils.log("移除无效代理：" + proxy);
@@ -140,7 +139,6 @@ public class RegistryMachine {
     public String toString() {
         return "RegistryMachine{" +
                 "config=" + config +
-                ", aima=" + aima +
                 ", service=" + service +
                 ", queue=" + queue +
                 ", process=" + process +

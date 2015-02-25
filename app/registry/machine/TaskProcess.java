@@ -18,13 +18,14 @@ import java.util.concurrent.TimeUnit;
 public abstract class TaskProcess {
     protected String phantomjsPath;
     protected List<String> phantomjsArgs = new ArrayList<>();
+
     public TaskProcess(String phantomjsPath) {
         this.phantomjsPath = phantomjsPath;
     }
 
-    public abstract void process(AIMA aima, Task task) throws Exception;
+    public abstract void process(Task task) throws Exception;
 
-    public void screenShot(PhantomJSDriver session,Task task) {
+    public void screenShot(PhantomJSDriver session, Task task) {
         if (RegistryMachineContext.isDebug) {
             try {
                 FileUtils.copyFile(((TakesScreenshot) session).getScreenshotAs(OutputType.FILE), new File("debug/" + task.getEmail() + "-debug.png"));
