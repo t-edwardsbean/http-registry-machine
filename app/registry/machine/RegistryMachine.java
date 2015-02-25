@@ -91,9 +91,8 @@ public class RegistryMachine {
                                         LogUtils.networkException(e);
                                         //TODO 搞清楚注册失败的原因，是否需要重试
                                     } catch (UnreachableBrowserException e) {
-                                        //未正常启动phantomjs,重试
                                         queue.add(task);
-                                        log.error("process task error", e);
+                                        log.error("未正常启动phantomjs,重试", e);
                                     } catch (Exception e) {
                                         log.error("process task error", e);
                                         LogUtils.log(e.getMessage());

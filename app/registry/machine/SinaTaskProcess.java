@@ -25,23 +25,7 @@ public class SinaTaskProcess extends TaskProcess {
     }
 
     public void process(AIMA aima, Task task) throws Exception {
-        DesiredCapabilities caps = new DesiredCapabilities();
-        List<String> args = new ArrayList<String>();
-        args.add("--ignore-ssl-errors=yes");
-        //启动phantomjs传递的命令行参数
-        if (!task.getArgs().isEmpty()) {
-            LogUtils.log(task, "使用代理：" + task.getArgs().get(0));
-            args.addAll(task.getArgs());
-        }
-        caps.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, args.toArray(new String[args.size()]));
-        //phantomjs启动后的参数
-        caps.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX + "userAgent", "Mozilla/5.0 (Linux;U;Android 2.2.2;zh-cn;ZTE-C_N880S Build/FRF91) AppleWebkit/531.1(KHTML, like Gecko) Version/4.0 Mobile Safari/531.1");
-        caps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, phantomjsPath);
-        caps.setJavascriptEnabled(true);
-        caps.setCapability("takesScreenshot", true);
-        PhantomJSDriver session = new PhantomJSDriver(caps);
-        session.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-        session.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS);
+        PhantomJSDriver session = getSession(task);
         try {
             try {
                 session.get("https://mail.sina.com.cn/register/regmail.php");
@@ -128,14 +112,7 @@ public class SinaTaskProcess extends TaskProcess {
                 LogUtils.successEmail(task);
                 RegistryMachineContext.registryMachine.queue.remove(task);
             } else {
-//                Object alert =  ((JavascriptExecutor) session).executeScript("return lastAlert");
-
-                try {
-                    FileUtils.copyFile(((TakesScreenshot) session).getScreenshotAs(OutputType.FILE), new File("debug/" + Thread.currentThread().getId() + email + "-end-exception.png"));
-                    Thread.sleep(RegistryMachineContext.sleepTime);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                screenShot(session, task);
                 Object result = session.executeScript("return window.lastAlert;");
                 if (result != null && result.toString().contains("该邮箱名已被占用")) {
                     LogUtils.emailException();
@@ -143,13 +120,10 @@ public class SinaTaskProcess extends TaskProcess {
                 throw new MachineException(LogUtils.format(task, "注册失败:" + result));
             }
         } finally {
-            try {
-                FileUtils.copyFile(((TakesScreenshot) session).getScreenshotAs(OutputType.FILE), new File("debug/" + task.getEmail() + "-debug.png"));
-                Thread.sleep(RegistryMachineContext.sleepTime);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            screenShot(session, task);
             session.quit();
         }
     }
+
+
 }
