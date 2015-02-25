@@ -31,7 +31,7 @@ public class SohuTaskProcess extends TaskProcess {
     }
 
     @Override
-    public void process(AIMA aima, Task task) {
+    public void process(Task task) {
         DesiredCapabilities caps = new DesiredCapabilities();
         List<String> args = new ArrayList<String>();
         args.add("--ignore-ssl-errors=yes");

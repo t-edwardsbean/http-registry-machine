@@ -46,7 +46,7 @@ public class AIMA {
             AIMA_GET_PHONE_URL = String.format(AIMA_GET_PHONE_URL, pid, uid) + token;
             AIMA_GET_CODE_URL = String.format(AIMA_GET_CODE_URL, uid, token);
         } else {
-            throw new MachineException("爱玛返回错误Token:" + loginResult);
+            throw new AIMAException("爱玛返回错误Token:" + loginResult);
         }
     }
 
@@ -73,7 +73,7 @@ public class AIMA {
         if (phoneLength == 2) {
             return getPhoneResult.split("\\|")[0];
         } else {
-            throw new MachineException("请求爱码返回手机号码，无法识别返回数据:" + getPhoneResult);
+            throw new AIMAException("请求爱码返回手机号码，无法识别返回数据:" + getPhoneResult);
         }
     }
 
@@ -105,6 +105,6 @@ public class AIMA {
             }
         }
         addIgnoreList(task);
-        throw new MachineException(LogUtils.format(task, "向爱玛平台索要验证码超时"));
+        throw new AIMAException(LogUtils.format(task, "向爱玛平台索要验证码超时"));
     }
 }

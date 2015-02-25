@@ -89,9 +89,8 @@ public class RegistryMachine {
                                         log.error("process task error", e);
                                         LogUtils.networkException(e);
                                         //TODO 搞清楚注册失败的原因，是否需要重试
-                                    } catch (UnreachableBrowserException e) {
+                                    } catch (UnreachableBrowserException | AIMAException e) {
                                         queue.add(task);
-                                        log.error("未正常启动phantomjs,重试", e);
                                     } catch (Exception e) {
                                         log.error("注册机错误", e);
                                         LogUtils.log("注册机错误" + e.getMessage());
