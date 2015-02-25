@@ -80,7 +80,7 @@ public class RegistryMachine {
                                     try {
                                         semaphore.acquire();
                                         process.process(task);
-                                    } catch (NoSuchElementException | MachineNetworkException e) {
+                                    } catch (MachineNetworkException e) {
                                         //移除无效代理
                                         LogUtils.log("移除无效代理：" + proxy);
                                         RegistryMachineContext.proxyQueue.remove(proxy);
@@ -93,8 +93,8 @@ public class RegistryMachine {
                                         queue.add(task);
                                         log.error("未正常启动phantomjs,重试", e);
                                     } catch (Exception e) {
-                                        log.error("process task error", e);
-                                        LogUtils.log(e.getMessage());
+                                        log.error("注册机错误", e);
+                                        LogUtils.log("注册机错误" + e.getMessage());
                                     } finally {
                                         semaphore.release();
                                         count.incrementAndGet();
