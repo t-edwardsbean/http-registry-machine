@@ -67,6 +67,9 @@ public class AIMA {
         }
         LogUtils.log(task, "请求手机号:" + AIMA_GET_PHONE_URL);
         String getPhoneResult = HttpUtils.Get(AIMA_GET_PHONE_URL);
+        if (getPhoneResult == null) {
+            throw new AIMAException(LogUtils.format(task, "爱玛平台返回返回手机号出错"));
+        }
         int phoneLength = getPhoneResult.split("\\|").length;
         log.debug("检测爱码平台获取的手机号码：" + getPhoneResult);
         LogUtils.log(task, "检测爱码平台获取的手机号码：" + getPhoneResult);
@@ -89,6 +92,9 @@ public class AIMA {
             String codeResult = HttpUtils.Get(AIMA_GET_CODE_URL + phone);
             LogUtils.log(task, "爱玛平台返回验证码信息:" + codeResult);
             log.debug("爱玛平台返回验证码信息:{}", codeResult);
+            if (codeResult == null) {
+                throw new AIMAException(LogUtils.format(task, "爱玛平台返回验证码信息出错"));
+            }
             int length = codeResult.split("\\|").length;
             if (length == 2) {
                 Pattern p = Pattern.compile("[^0-9]");

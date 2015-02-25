@@ -88,12 +88,12 @@ public class RegistryMachine {
                                         queue.add(task);
                                         log.error("process task error", e);
                                         LogUtils.networkException(e);
-                                        //TODO 搞清楚注册失败的原因，是否需要重试
-                                    } catch (UnreachableBrowserException | AIMAException e) {
+                                    } catch (UnreachableBrowserException | MachineDelayException | AIMAException e) {
                                         queue.add(task);
+                                        LogUtils.log(e.getMessage());
                                     } catch (Exception e) {
                                         log.error("注册机错误", e);
-                                        LogUtils.log("注册机错误" + e.getMessage());
+                                        LogUtils.log(e.getMessage());
                                     } finally {
                                         semaphore.release();
                                         count.incrementAndGet();
