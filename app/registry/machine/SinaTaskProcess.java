@@ -53,7 +53,6 @@ public class SinaTaskProcess extends TaskProcess {
             Thread.sleep(RegistryMachineContext.sleepTime);
             if (!emailElementAlert.getText().isEmpty()) {
                 LogUtils.emailException();
-                RegistryMachineContext.registryMachine.queue.remove(task);
                 throw new MachineException(LogUtils.format(task, "邮箱不合法：" + emailElementAlert.getText()));
             } else {
                 log.debug(Thread.currentThread() + "邮箱ok,继续");
@@ -85,15 +84,13 @@ public class SinaTaskProcess extends TaskProcess {
             String endTitle = session.getTitle();
             log.debug("成功后跳转：" + endTitle);
             LogUtils.log(task, "成功后跳转：" + endTitle);
-            if (!beginTitle.equals(endTitle)) {
+            Object result = session.executeScript("return window.lastAlert;");
+            if (!beginTitle.equals(endTitle) || result == null) {
                 log.debug(Thread.currentThread() + "注册成功，账号：{},密码：{}", email, password);
                 LogUtils.log(task, "注册成功，账号：" + email + ",密码：" + password);
                 LogUtils.successEmail(task);
-                RegistryMachineContext.registryMachine.queue.remove(task);
             } else {
-                screenShot(session, task);
-                Object result = session.executeScript("return window.lastAlert;");
-                if (result != null && result.toString().contains("该邮箱名已被占用")) {
+                if (result.toString().contains("该邮箱名已被占用")) {
                     LogUtils.emailException();
                 }
                 throw new MachineException(LogUtils.format(task, "注册失败:" + result));
