@@ -81,9 +81,6 @@ public class SinaTaskProcess extends TaskProcess {
             WebElement submit = session.findElementByCssSelector("#openNow_2");
             submit.click();
             Thread.sleep(4000);
-            String endTitle = session.getTitle();
-            log.debug("成功后跳转：" + endTitle);
-            LogUtils.log(task, "成功后跳转：" + endTitle);
             try {
                 WebElement isSuccess = session.findElementByCssSelector("#openNow_2");
                 if ("登陆中...".equals(isSuccess.getText())) {
@@ -93,6 +90,10 @@ public class SinaTaskProcess extends TaskProcess {
             } catch (Exception e) {
                 //正常
             }
+            String endTitle = session.getTitle();
+            log.debug("成功后跳转：" + endTitle);
+            LogUtils.log(task, "成功后跳转：" + endTitle);
+
             Object result = session.executeScript("return window.lastAlert;");
             //result == null表示未提示错误，那么就当作注册成功，不过会有一定概率误以为是注册成功了
             if (!beginTitle.equals(endTitle) || result == null) {
@@ -102,7 +103,7 @@ public class SinaTaskProcess extends TaskProcess {
             } else {
                 if (result.toString().contains("该邮箱名已被占用")) {
                     LogUtils.emailException();
-                } else if (result.toString().contains("请稍候再试") | result.toString().contains("验证码输入错误")) {
+                } else if (result.toString().contains("请稍后再试") | result.toString().contains("验证码输入错误")) {
                     throw new MachineDelayException(LogUtils.format(task, "服务的异常:" + result));
                 }
                 throw new MachineException(LogUtils.format(task, "注册失败:" + result));

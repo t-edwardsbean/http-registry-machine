@@ -88,12 +88,15 @@ public class RegistryMachine {
                                         queue.add(task);
                                         log.error("process task error", e);
                                         LogUtils.networkException(e);
+                                        LogUtils.log(task, "加入重试队列");
                                     } catch (UnreachableBrowserException | MachineDelayException | AIMAException e) {
                                         queue.add(task);
                                         LogUtils.log(e.getMessage());
+                                        LogUtils.log(task, "加入重试队列");
                                     } catch (Exception e) {
                                         log.error("注册机错误", e);
                                         LogUtils.log(e.getMessage());
+                                        LogUtils.log(task, "不进行重试");
                                     } finally {
                                         semaphore.release();
                                         count.incrementAndGet();
