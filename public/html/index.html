@@ -144,7 +144,7 @@
                                     <td id="proxyPath" style="word-wrap:break-word;word-break: break-all">无</td>
                                 </tr>
                                 <tr>
-                                    <td>有效代理</td>
+                                    <td>剩余代理</td>
                                     <td id="proxyNum">0</td>
                                 </tr>
                                 </tbody>
@@ -256,7 +256,7 @@
             <div class="modal-body">
                 <div class="alert alert-success" role="alert">
                     请填写配置参数，并一一上传邮箱文件和代理文件。
-                    <strong>邮箱文件为必须</strong>
+                    <strong>线程数默认为15个，邮箱文件为必须</strong>
                 </div>
 
                 <table class="table-condensed designTable col-sm-offset-1">
@@ -264,16 +264,7 @@
                     <tr>
                         <td>工作线程</td>
                         <td>
-                            <input placeholder="1" id="modal-threadNum" class="form-control field" type="text" size="5"
-                                   onkeyup="value=value.replace(/[^\d]/g,'')"
-                                   onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>等待时间</td>
-                        <td>
-                            <input placeholder="2000" id="modal-waitTime" class="form-control field" type="text"
-                                   size="5"
+                            <input placeholder="15" id="modal-threadNum" class="form-control field" type="text" size="5"
                                    onkeyup="value=value.replace(/[^\d]/g,'')"
                                    onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))">
                         </td>

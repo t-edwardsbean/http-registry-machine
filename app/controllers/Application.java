@@ -6,12 +6,15 @@ import models.User;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.RandomStringUtils;
-import play.*;
+import play.Logger;
 import play.data.DynamicForm;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
-import play.mvc.*;
+import play.mvc.Controller;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.mvc.WebSocket;
 import registry.machine.RegistryMachineContext;
 import registry.machine.Task;
 
@@ -28,32 +31,39 @@ public class Application extends Controller {
 
     public static Result start(int threadNum, int waitTime) {
         log.debug("controller:启动注册机,threadNum:{},waitTime:{}", threadNum, waitTime);
-            if (RegistryMachineContext.sleepTime < waitTime) {
-                RegistryMachineContext.sleepTime = waitTime;
-            }
+        if (RegistryMachineContext.sleepTime < waitTime) {
+            RegistryMachineContext.sleepTime = waitTime;
+        }
+        if (threadNum > 0 && threadNum < 30) {
             RegistryMachineContext.registryMachine.thread(threadNum);
-            try {
-                RegistryMachineContext.start();
-            } catch (NullPointerException e) {
-                return internalServerError("请刷新浏览器");
-            }
+        } else if (threadNum >= 30) {
+            RegistryMachineContext.registryMachine.thread(30);
+        } else {
+            RegistryMachineContext.registryMachine.thread(15);
+        }
+        try {
+            RegistryMachineContext.start();
+        } catch (NullPointerException e) {
+            return internalServerError("请刷新浏览器");
+        }
         return ok("ok");
     }
 
     public static Result download() {
         response().setContentType("application/x-download");
-        response().setHeader("Content-disposition","attachment; filename=result.txt");
+        response().setHeader("Content-disposition", "attachment; filename=result.txt");
         return ok(RegistryMachineContext.result.toString());
     }
+
     public static Result status() {
         log.debug("查询注册机状态：{}", RegistryMachineContext.isRunning.get());
         return ok(RegistryMachineContext.isRunning.get() + "");
-    }    
+    }
 
     public static Result proxyNum() {
         return ok(RegistryMachineContext.proxyQueue.size() + "");
     }
-    
+
     public static Result getProxyFile() {
         log.debug("代理文件名：{}", RegistryMachineContext.proxyFileName);
         return ok(RegistryMachineContext.proxyFileName);
@@ -66,15 +76,15 @@ public class Application extends Controller {
         RegistryMachineContext.proxyFileName = proxyPath;
         return ok("ok");
     }
-    
+
     public static Result stop() {
         log.debug("controller:停止注册机");
         RegistryMachineContext.stop();
         return ok("ok");
     }
-    
+
     public static Result aima() {
-        log.debug("获取aima账户名称:{}",RegistryMachineContext.AIMAName);
+        log.debug("获取aima账户名称:{}", RegistryMachineContext.AIMAName);
         return ok(RegistryMachineContext.AIMAName);
     }
 

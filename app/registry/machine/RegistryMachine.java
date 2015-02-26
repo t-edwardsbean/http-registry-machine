@@ -91,8 +91,7 @@ public class RegistryMachine {
                                         LogUtils.log(task, "加入重试队列");
                                     } catch (UnreachableBrowserException | MachineDelayException | AIMAException e) {
                                         queue.add(task);
-                                        LogUtils.log(e.getMessage());
-                                        LogUtils.log(task, "加入重试队列");
+                                        LogUtils.log(task, "加入重试队列，错误原因：" + e.getMessage());
                                     } catch (Exception e) {
                                         log.error("注册机错误", e);
                                         LogUtils.log(e.getMessage());
