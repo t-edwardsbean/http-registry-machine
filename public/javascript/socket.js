@@ -8,6 +8,9 @@ $(function () {
             if(data.value === "注册机运行结束" || data.value === "没有邮箱文件，请上传") {
                 $('#stopBtn').click();
             }
+            if(data.value === "注册机运行结束") {
+                $('#outBtn').click();
+            }
             if(data.value.indexOf("移除无效代理") !== -1) {
                 var num = parseInt($("#proxyNum").text());
                 num = num - 1;

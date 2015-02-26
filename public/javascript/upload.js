@@ -75,9 +75,9 @@ function uploadProxy(event) {
     xhr.onload = function () {
         if (xhr.status === 200) {
             // File(s) uploaded.
-            alert('upload success:' + xhr.responseText)
+            alert('设置代理成功:' + xhr.responseText)
         } else {
-            alert('An error occurred!:' + + xhr.responseText);
+            alert('代理格式校验失败!:' + + xhr.responseText);
         }
     };
     // Send the Data.
