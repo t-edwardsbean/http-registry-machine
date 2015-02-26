@@ -40,6 +40,7 @@ public abstract class TaskProcess {
         DesiredCapabilities caps = new DesiredCapabilities();
         List<String> args = new ArrayList<String>();
         args.add("--ignore-ssl-errors=yes");
+        args.add("--disk-cache=true");
         //启动phantomjs传递的命令行参数
         if (!task.getArgs().isEmpty()) {
             LogUtils.log(task, "使用代理：" + task.getArgs().get(0));
