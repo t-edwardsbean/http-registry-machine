@@ -76,6 +76,9 @@ function save() {
     var threadNum = $('#modal-threadNum').val();
     var waitTime = $('#modal-waitTime').val();
     var proxyPath = $('#proxy-select').val();
+    var username = $('#username').val();
+    var password = $('#password').val();
+    
     $.ajax({
         url: "proxyFile",
         type: 'post',
@@ -92,7 +95,17 @@ function save() {
             $('#proxyNum').html(msg);
         }
     });
-
+    $.ajax({
+        url: "changeUser",
+        type: 'post',
+        data : {
+            username: username,
+            password: password
+        }
+    });
+    if (username !== "") {
+        $('#aimaUser').html(username);
+    }
     if (threadNum !== "") {
         $('#threadNum').html(threadNum);
     }

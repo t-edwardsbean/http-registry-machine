@@ -15,6 +15,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.WebSocket;
+import registry.machine.Config;
 import registry.machine.RegistryMachineContext;
 import registry.machine.Task;
 
@@ -74,6 +75,17 @@ public class Application extends Controller {
         String proxyPath = requestData.get("path");
         log.debug("代理文件名：{}", proxyPath);
         RegistryMachineContext.proxyFileName = proxyPath;
+        return ok("ok");
+    }
+    
+    public static Result changeUser() {
+        DynamicForm requestData = Form.form().bindFromRequest();
+        String username = requestData.get("username");
+        String password = requestData.get("password");
+        log.debug("账号：{},密码：{}", username,password);
+        RegistryMachineContext.AIMAName = username;
+        Config config = new Config(username, password, "1219");
+        RegistryMachineContext.registryMachine.setConfig(config);
         return ok("ok");
     }
 

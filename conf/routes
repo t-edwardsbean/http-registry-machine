@@ -8,7 +8,8 @@ GET         /status                  controllers.Application.status
 GET         /proxyNum                controllers.Application.proxyNum
 GET         /proxyFile               controllers.Application.getProxyFile
 POST        /proxyFile               controllers.Application.setProxyFile
-GET         /start                   controllers.Application.start(threadNum:Int?=1,waitTime:Int?=2000)
+POST        /changeUser               controllers.Application.changeUser
+GET         /start                   controllers.Application.start(threadNum:Int?=15,waitTime:Int?=2000)
 GET         /stop                    controllers.Application.stop
 GET         /aima                    controllers.Application.aima
 GET         /hello/:name             controllers.Application.hello(name:String)
