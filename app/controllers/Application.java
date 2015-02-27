@@ -15,6 +15,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.WebSocket;
+import registry.machine.AIMAException;
 import registry.machine.Config;
 import registry.machine.RegistryMachineContext;
 import registry.machine.Task;
@@ -46,6 +47,8 @@ public class Application extends Controller {
             RegistryMachineContext.start();
         } catch (NullPointerException e) {
             return internalServerError("请刷新浏览器");
+        } catch (AIMAException e) {
+            return internalServerError("请输入正确的爱玛平台账号密码:" + e.getMessage());
         }
         return ok("ok");
     }

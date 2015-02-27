@@ -36,7 +36,7 @@ public class AIMA {
         RegistryMachineContext.logger.tell("登录爱玛:" + AIMA_LOGIN_URL, ActorRef.noSender());
         String loginResult = HttpUtils.Get(AIMA_LOGIN_URL);
         String[] result = loginResult.split("\\|");
-        if (result.length == 2) {
+        if (result.length == 2 && !"速度过快，请稍后再试".equals(result[1])) {
             this.token = result[1];
             log.debug("成功登录爱玛平台，Response:" + loginResult);
             RegistryMachineContext.logger.tell("成功登录爱玛平台，Response:" + loginResult, ActorRef.noSender());
