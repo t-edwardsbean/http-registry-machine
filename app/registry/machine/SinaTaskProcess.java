@@ -87,7 +87,11 @@ public class SinaTaskProcess extends TaskProcess {
                     LogUtils.log(task, "还在登录中，等待");
                     Thread.sleep(4000);
                 }
-            } catch (Exception e) {
+                isSuccess = session.findElementByCssSelector("#openNow_2");
+                if ("登陆中...".equals(isSuccess.getText())) {
+                    throw new MachineDelayException(LogUtils.format(task, "还在登录中，网络延迟，加入重试"));
+                }
+            } catch (NoSuchElementException e) {
                 //正常
             }
             String endTitle = session.getTitle();
