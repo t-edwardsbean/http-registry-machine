@@ -37,7 +37,11 @@ function uploadEmail(event) {
     xhr.onload = function () {
         if (xhr.status === 200) {
             // File(s) uploaded.
-            alert('设置邮箱账号成功:' + xhr.responseText)
+            alert('设置邮箱账号成功:' + xhr.responseText);
+            $("#emailException").text(0);
+            $("#successNum").text(0);
+            $("#emailException").text(0);
+            $("#logSection").text("");
         } else {
             alert('校验邮箱格式失败!:' + + xhr.responseText);
         }
