@@ -29,10 +29,13 @@ public class Global extends GlobalSettings {
         int threadNum = playConfiguration.getInt("phantomjs.thread");
         Config config = new Config(uid, pwd, pid);
         config.setPhantomjsPath(phantomjsPath);
+        String encode = playConfiguration.getString("uu.encode");
         String folder=System.getProperty("java.io.tmpdir");
         Logger.info("注册机配置：" + UUAPI.USERNAME + "," + UUAPI.PASSWORD);
         Logger.info("是否调试模式：{}", isDebug);
         Logger.info("临时文件夹：{}", folder);
+        Logger.info("UU验证码编码：{}", encode);
+        RegistryMachineContext.encode = encode;
         RegistryMachineContext.isDebug = isDebug;
         RegistryMachineContext.registryMachine.setConfig(config);
         RegistryMachineContext.registryMachine.thread(threadNum);

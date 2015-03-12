@@ -25,6 +25,7 @@ public class RegistryMachineContext {
     public static AtomicBoolean isRunning = new AtomicBoolean(false);
     public static StringBuilder result = new StringBuilder();
     public static AIMA aima;
+    public static String encode;
     public static AtomicBoolean isFilter = new AtomicBoolean(false);
 
     public static void addProxy(String proxy) {

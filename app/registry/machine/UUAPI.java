@@ -58,6 +58,29 @@ public class UUAPI {
         return UUDLL.INSTANCE.uu_reportError(id);
     }
 
+    public static String[] easyDecaptcha(byte[] by, int codeType) throws IOException {
+        if (!checkStatus) {
+
+            String rs[] = {"-19004", "API校验失败,或未校验"};
+            return rs;
+        }
+
+        byte[] resultBtye = new byte[100];        //为识别结果申请内存空间
+        UUDLL.INSTANCE.uu_setTimeOut(10000);
+        int codeID = UUDLL.INSTANCE.uu_easyRecognizeBytesA(SOFTID, SOFTKEY, USERNAME, PASSWORD, by, by.length, codeType, resultBtye);
+        String resultResult = null;
+        try {
+            resultResult = new String(resultBtye, RegistryMachineContext.encode);//如果是乱码，这改成UTF-8试试
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        resultResult = resultResult.trim();
+
+        //下面这两条是为了防止被破解
+
+        String rs[] = {String.valueOf(codeID), checkResult(resultResult, codeID)};
+        return rs;
+    }
     public static String[] easyDecaptcha(String picPath, int codeType) throws IOException {
         if (!checkStatus) {
 
@@ -78,7 +101,7 @@ public class UUAPI {
         int codeID = UUDLL.INSTANCE.uu_easyRecognizeBytesA(SOFTID, SOFTKEY, USERNAME, PASSWORD, by, by.length, codeType, resultBtye);
         String resultResult = null;
         try {
-            resultResult = new String(resultBtye, "GBK");//如果是乱码，这改成UTF-8试试
+            resultResult = new String(resultBtye,RegistryMachineContext.encode);//如果是乱码，这改成UTF-8试试
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -128,6 +151,7 @@ public class UUAPI {
         if (dllResult.indexOf("_") < 0)
             return dllResult;
 
+        System.out.println("UUAPI，验证码结果为：" + dllResult);
         //对结果进行校验
         String[] re = dllResult.split("_");
         String verify = re[0];

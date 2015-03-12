@@ -1,5 +1,6 @@
 package registry.machine;
 
+import com.google.common.io.Files;
 import com.jayway.jsonpath.JsonPath;
 import models.Code;
 import org.apache.http.HttpHost;
@@ -40,7 +41,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
         CookieStore cookieStore = new BasicCookieStore();
         HttpClientContext context = HttpClientContext.create();
         context.setCookieStore(cookieStore);
-        if (!isEmailOK(task, context, cookieStore)) {
+        if (!isEmailOK(task)) {
             LogUtils.emailException();
             return;
         }
@@ -76,7 +77,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             //中文url编码
             submitEmail.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
             submitEmail.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
-            submitEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 30000);
+            submitEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 10000);
             CloseableHttpResponse submitEmailResponse = null;
             String submitEmailResult = null;
             int statusCode = 0;
@@ -118,7 +119,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             //为了防止提交成功，但是服务器链接不稳定抛出异常而误判失败，再对邮箱做一次校验
             if (isSubmitError) {
                 LogUtils.log(task, "为了防止提交成功，但是服务器链接不稳定抛出异常而误判失败，再对邮箱做一次校验");
-                if(!isEmailOK(task, context, cookieStore)) {
+                if(!isEmailOK(task)) {
                     LogUtils.log(task, "注册成功");
                     LogUtils.successEmail(task);
                     log.info(task + "注册成功");
@@ -140,7 +141,8 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                 continue;
             }
             if (submitEmailResult != null && submitEmailResult.contains("您的注册数量已超过正常限制,请使用已有账号进行登录")) {
-                throw new MachineException(task + ",注册数量已超过正常限制：" + submitEmail.getParams().getParameter(ConnRoutePNames.DEFAULT_PROXY));
+                LogUtils.log(task, ",注册数量已超过正常限制：" + submitEmail.getParams().getParameter(ConnRoutePNames.DEFAULT_PROXY));
+                continue;
             } else if (cookieStore.getCookies().size() == 6) {
                 LogUtils.log(task, "注册成功");
                 LogUtils.successEmail(task);
@@ -155,7 +157,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             }
             if (!isSubmitError) {
                 LogUtils.log(task, "即没有验证码失败，也没有网络通讯异常，再做一次邮箱验证");
-                if (!isEmailOK(task, context, cookieStore)) {
+                if (!isEmailOK(task)) {
                     LogUtils.log(task, "注册成功");
                     LogUtils.successEmail(task);
                     log.info(task + "注册成功");
@@ -179,7 +181,10 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
         }
     }
 
-    public boolean isEmailOK(Task task, HttpClientContext context,CookieStore cookieStore) {
+    public boolean isEmailOK(Task task) {
+        CookieStore cookieStore = new BasicCookieStore();
+        HttpClientContext context = HttpClientContext.create();
+        context.setCookieStore(cookieStore);
         //检查邮箱
         String proxy = null;
         cookieStore.getCookies().clear();
@@ -191,33 +196,25 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
         CloseableHttpResponse checkEmailResponse = null;
         int statusCode = 0;
         String checkResult = null;
-        boolean isError = false;
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                //第一遍用本地,出错就不用本地，用代理
-                if (!isError) {
-                    isError = true;
-                } else {
-                    LogUtils.log(task, "检测邮箱使用代理");
-                    proxy = RegistryMachineContext.proxyQueue.poll();
-                    if (proxy != null) {
-                        addProxy(proxy, checkEmail, task);
-                    } else {
-                        throw new RuntimeException(task + ",代理已用完，不尝试重新注册");
-                    }
-                }
                 checkEmailResponse = HttpUtils.httpclient.execute(checkEmail, context);
                 String checkEmailResult = EntityUtils.toString(checkEmailResponse.getEntity());
                 statusCode = checkEmailResponse.getStatusLine().getStatusCode();
                 try {
                     checkResult = JsonPath.read(checkEmailResult, "$.msg");
                 } catch (Exception e) {
+                    log.error(task + "，验证邮箱请求失败：服务的未返回json,状态码：" + statusCode, e);
+                    LogUtils.log(task, "验证邮箱请求失败：服务的未返回json,状态码：" + statusCode);
                     initCookie(context);
                     cookieStore.getCookies().clear();
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e1) {
+
+                    }
                     continue;
                 }
-                returnProxy(proxy);
-                log.debug("检查邮箱名：" + checkResult);
                 log.error("{}检查邮箱是否可用：{}", task, checkEmailResult);
                 if ("账号可用".equals(checkResult)) {
                     log.info("邮箱可用：" + task.getEmail());
@@ -232,17 +229,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                 initCookie(context);
                 //不在RegistryMachine中重试，以免浪费已经获取到的验证码
                 log.error(task + "，验证邮箱请求失败：" + e.getMessage() + ",状态码：" + statusCode, e);
-                LogUtils.networkException(LogUtils.format(task, "验证邮箱请求失败：" + e.getMessage() + ",状态码：" + statusCode));
-                //移除无效代理
-                if (proxy != null) {
-                    LogUtils.log(task, "移除无效代理：" + proxy + ",立刻切换IP重试");
-                    proxy = RegistryMachineContext.proxyQueue.poll();
-                    LogUtils.log(task, "检测邮箱使用代理");
-                    addProxy(proxy, checkEmail, task);
-                } else {
-                    LogUtils.log(task, "代理已用完，不尝试重新注册");
-                    throw new RuntimeException(task + ",代理已用完，不尝试重新注册");
-                }
+                LogUtils.log(task, "验证邮箱请求失败：" + e.getMessage() + ",状态码：" + statusCode);
             } finally {
                 try {
                     if (checkEmailResponse != null) {
@@ -264,21 +251,31 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
 
     public Code getPictureCode(HttpClientContext context, Task task) throws Exception {
         Code code;
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             LogUtils.log(task, "获取图片验证码");
-            String path = System.getProperty("java.io.tmpdir") + "\\" + task.getEmail() + "-code.png";
+            log.info(task + "获取图片验证码");
+            String path = System.getProperty("java.io.tmpdir") + "\\" + System.currentTimeMillis() + "-Code.jpg";
             File file = new File(path);
             CloseableHttpResponse pictureOneResponse = HttpUtils.httpclient.execute(new HttpGet("http://i.sohu.com/vcode/register/?nocache=" + (new Date()).getTime()), context);
             BufferedInputStream bis = new BufferedInputStream(pictureOneResponse.getEntity().getContent());
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
             int inByte;
             while ((inByte = bis.read()) != -1) bos.write(inByte);
-            bis.close();
             bos.close();
+            bis.close();
             pictureOneResponse.close();
-            log.info(task + "识别图片验证码");
+            Thread.sleep(2000);
+            log.info(task + "识别图片验证码:" + path) ;
             LogUtils.log(task, "等待UU平台识别图片验证码，会比较慢稍等");
-            String result[] = UUAPI.easyDecaptcha(path, 2004);
+            String result[];
+            try {
+                result = UUAPI.easyDecaptcha(Files.toByteArray(file), 2004);
+            } catch (NullPointerException e) {
+                log.info(task + "验证码识别异常，等待重试");
+                LogUtils.log(task, "验证码识别异常，等待重试");
+                Thread.sleep(1000);
+                continue;
+            }
             code = new Code(result[1], result[0]);
             log.debug(path + "图片验证码codeID:" + result[0]);
             LogUtils.log(task, "图片验证码codeID:" + result[0]);
@@ -289,17 +286,23 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             } else {
                 LogUtils.log(task, "图片验证码Result:" + code);
             }
-            if ("-1008".equals(code.getCode()) || "TIMEOUT".equals(code.getCode())) {
+            if ("-1008".equals(code.getCode()) || "TIMEOUT".equals(code.getCode()) || "校验失败".equals(code.getCode())) {
                 //超时，防止尝试太频繁
                 UUAPI.reportError(Integer.parseInt(result[0]));
-                LogUtils.log(task, "验证码超时，向UU汇报验证码错误");
-                log.info(task + ",验证码超时，向UU汇报验证码错误");
+                LogUtils.log(task, "验证码超时或者乱码，向UU汇报验证码错误");
+                log.info(task + ",验证码超时或者乱码，向UU汇报验证码错误");
                 Thread.sleep(1000);
-            } else {
+            } else if("-1004".equals(code.getCode())){
+                Thread.sleep(1000);
+            } else if(codeInf != null) {
+                LogUtils.log(task, "验证码异常：" + codeInf + ",重试");
+                Thread.sleep(3000);
+            }else {
                 LogUtils.uuRequest(task);
                 return code;
             }
         }
+        throw new RuntimeException(task + "用户退出注册");
     }
 
     public void initCookie(HttpClientContext context) {

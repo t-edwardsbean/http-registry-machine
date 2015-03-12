@@ -34,21 +34,17 @@ import java.security.NoSuchAlgorithmException;
  */
 public class HttpUtils {
     private static Logger log = LoggerFactory.getLogger(HttpUtils.class);
-    private static PoolingHttpClientConnectionManager cm;
     public static CloseableHttpClient httpclient;
 
     static {
         SSLContext sslContext = null;
         try {
             sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).useTLS().build();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
+        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
             e.printStackTrace();
         }
         HttpClientBuilder builder = HttpClientBuilder.create();
+        assert sslContext != null;
         SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
         builder.setSSLSocketFactory(sslConnectionFactory);
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
@@ -56,8 +52,8 @@ public class HttpUtils {
                 .register("http", new PlainConnectionSocketFactory())
                 .build();
 
-        cm = new PoolingHttpClientConnectionManager(registry);
-        cm.setMaxTotal(30);
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
+        cm.setMaxTotal(200);
         httpclient = HttpClients.custom()
                 .setConnectionManager(cm)
                 .build();
