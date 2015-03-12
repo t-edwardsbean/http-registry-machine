@@ -1,11 +1,15 @@
 package registry.machine;
 
 import akka.actor.ActorRef;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.remote.UnreachableBrowserException;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,12 +37,14 @@ public class RegistryMachine {
     }
 
     private void init() {
-        RegistryMachineContext.aima = new AIMA(config.getUid(), config.getPwd(), config.getPid());
+//        RegistryMachineContext.aima = new AIMA(config.getUid(), config.getPwd(), config.getPid());
     }
 
     public void thread(int num) {
         this.threadNum = num;
-        this.service = Executors.newFixedThreadPool(num);
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("TaskProcessorThread-%d").build();
+        this.service = Executors.newFixedThreadPool(num, nameThreadFactory);
+
     }
 
     public void addTask(Task... tasks) {
@@ -54,25 +60,32 @@ public class RegistryMachine {
     public void run() {
         RegistryMachineContext.isRunning.set(true);
         log.debug("启动注册机：" + RegistryMachineContext.isRunning.get());
-        if (queue.isEmpty()) {
+        if (queue.isEmpty() && RegistryMachineContext.okEmailQueue.isEmpty()) {
             log.debug("没有邮箱文件，请上传");
             RegistryMachineContext.logger.tell("没有邮箱文件，请上传", ActorRef.noSender());
             return;
+        }
+        if (!RegistryMachineContext.okEmailQueue.isEmpty()) {
+            queue.clear();
+            queue.addAll(RegistryMachineContext.okEmailQueue);
+            RegistryMachineContext.okEmailQueue.clear();
         }
         init();
         RegistryMachineContext.logger.tell("启动注册机", ActorRef.noSender());
         asynRun = new Thread(new Runnable() {
             @Override
             public void run() {
+                String endException = "";
                 try {
                     final Semaphore semaphore = new Semaphore(threadNum);
                     while (!Thread.currentThread().isInterrupted()) {
                         while (!queue.isEmpty()) {
                             final Task task = queue.poll();
-                            final String proxy = RegistryMachineContext.proxyQueue.poll();
-                            if (proxy != null) {
-                                task.getArgs().add(proxy);
-                                RegistryMachineContext.proxyQueue.add(proxy);
+//                            final String proxy = RegistryMachineContext.proxyQueue.poll();
+                            if (RegistryMachineContext.proxyQueue.isEmpty()) {
+                                log.error("代理已用完或为空");
+                                LogUtils.log("代理已用完或为空");
+                                break;
                             }
                             service.execute(new Runnable() {
                                 @Override
@@ -80,22 +93,24 @@ public class RegistryMachine {
                                     try {
                                         semaphore.acquire();
                                         process.process(task);
-                                    } catch (MachineNetworkException e) {
+//                                        RegistryMachineContext.proxyQueue.add(proxy);
+                                    } catch (ConnectTimeoutException | SocketTimeoutException | SocketException | MachineException e) {
                                         //移除无效代理
-                                        LogUtils.log("移除无效代理：" + proxy);
-                                        RegistryMachineContext.proxyQueue.remove(proxy);
+//                                        LogUtils.log(task, "RegistryMachine移除无效代理：" + proxy);
+//                                        RegistryMachineContext.proxyQueue.remove(proxy);
                                         //网络异常，重试
+                                        if (RegistryMachineContext.proxyQueue.isEmpty()) {
+                                            LogUtils.log(task, "RegistryMachine检测没有剩余代理，不重试：");
+                                            log.error(task.getEmail() + ",RegistryMachine检测没有剩余代理，不重试");
+                                            return;
+                                        }
                                         queue.add(task);
-                                        log.error("process task error", e);
-                                        LogUtils.networkException(e);
-                                        LogUtils.log(task, "加入重试队列");
-                                    } catch (UnreachableBrowserException | MachineDelayException | AIMAException e) {
-                                        queue.add(task);
-                                        LogUtils.log(task, "加入重试队列，错误原因：" + e.getMessage());
+                                        log.error(task.getEmail() + ",注册失败，RegistryMachine加入重试队列:", e);
+                                        LogUtils.networkException(LogUtils.format(task, e.getMessage()));
+                                        LogUtils.log(task, "RegistryMachine加入重试队列");
                                     } catch (Exception e) {
-                                        log.error("注册机错误", e);
-                                        LogUtils.log(e.getMessage());
-                                        LogUtils.log(task, "不进行重试");
+                                        log.error("注册机错误,RegistryMachine不重试", e);
+                                        LogUtils.log(task, "RegistryMachine不重试:" + e.getMessage());
                                     } finally {
                                         semaphore.release();
                                         count.incrementAndGet();
@@ -117,16 +132,25 @@ public class RegistryMachine {
 //                                break;
 //                            }
 //                        }
+                        log.info("代理队列：" + RegistryMachineContext.proxyQueue.size() + "　任务队列：" + queue.size() + " 活跃线程：" + (threadNum - semaphore.availablePermits()));
                         //全部任务运行完成
-                        if (queue.isEmpty() && semaphore.availablePermits() == threadNum) {
+                        if (semaphore.availablePermits() == threadNum) {
                             break;
                         }
                     }
                 } finally {
-                    LogUtils.log("注册机运行结束");
+                    if (RegistryMachineContext.isFilter.get()) {
+                        LogUtils.log("过滤账号运行结束");
+                    } else {
+                        if (!queue.isEmpty()) {
+                            endException = ",代理用完，剩余" + queue.size() + "未注册";
+                        }
+                        LogUtils.log("注册机运行结束" + endException);
+                    }
                 }
             }
         });
+        asynRun.setName("RegistryMachineThread");
         asynRun.start();
     }
 

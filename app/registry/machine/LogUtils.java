@@ -29,9 +29,16 @@ public class LogUtils {
     public static void successEmail(Task task) {
         RegistryMachineContext.logger.tell(new Log("email", new Email(task.getEmail(), task.getPassword())), ActorRef.noSender());
     }
+    public static void uuRequest(Task task) {
+        RegistryMachineContext.logger.tell(new Log("uuRequest", ""), ActorRef.noSender());
+    }
 
     public static void networkException() {
         RegistryMachineContext.logger.tell(new Log("networkError", "代理不可用或者网络超时"), ActorRef.noSender());
+    }
+
+    public static void networkException(String msg) {
+        RegistryMachineContext.logger.tell(new Log("networkError",msg), ActorRef.noSender());
     }
 
     public static void networkException(Exception e) {

@@ -15,15 +15,17 @@ public class RegistryMachineContext {
     public static boolean isDebug = false;
     public static String AIMAName;
     public static int sleepTime = 2000;
-    public static String phantomjsPath;
     public static ActorRef logger;
     public static String proxyFileName = "无";
     public static RegistryMachine registryMachine = new RegistryMachine();
     public static Queue<String> proxyQueue = new ConcurrentLinkedQueue<>();
+    public static Queue<String> proxyInUse = new ConcurrentLinkedQueue<>();
     public static Queue<Email> emailQueue = new ConcurrentLinkedQueue<>();
+    public static Queue<Task> okEmailQueue = new ConcurrentLinkedQueue<>();
     public static AtomicBoolean isRunning = new AtomicBoolean(false);
     public static StringBuilder result = new StringBuilder();
     public static AIMA aima;
+    public static AtomicBoolean isFilter = new AtomicBoolean(false);
 
     public static void addProxy(String proxy) {
         proxyQueue.add(proxy);
@@ -49,4 +51,5 @@ public class RegistryMachineContext {
         registryMachine.stop();
         isRunning.set(false);
     }
+
 }

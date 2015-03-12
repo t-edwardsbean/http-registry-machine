@@ -1,4 +1,4 @@
-name := "registry-machine"
+name := "sohu-registry-machine"
 
 version := "1.0"
 
@@ -10,8 +10,8 @@ scalaVersion := "2.11.1"
 
 libraryDependencies ++= Seq(
   "commons-io" % "commons-io" % "2.2",
+  "com.jayway.jsonpath" % "json-path" % "1.2.0",
   "org.apache.httpcomponents" % "httpclient" % "4.3.2",
-  "com.github.detro" % "phantomjsdriver" % "1.2.0",
   "org.webjars" %% "webjars-play" % "2.3.0-2",
   "org.webjars" % "bootstrap" % "3.3.1",
   "org.webjars" % "jquery" % "2.1.1",
@@ -19,7 +19,8 @@ libraryDependencies ++= Seq(
   "org.webjars" % "underscorejs" % "1.7.0",
   "org.webjars" % "dustjs-linkedin" % "2.4.0-1",
   "org.slf4j" % "log4j-over-slf4j" % "1.7.7",
-  "com.adrianhurt" %% "play-bootstrap3" % "0.1.1"
+  "com.adrianhurt" %% "play-bootstrap3" % "0.1.1",
+  "net.java.dev.jna" % "jna" % "3.4.0"
 )
 
 //不发布api doc

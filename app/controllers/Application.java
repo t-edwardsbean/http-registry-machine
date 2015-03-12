@@ -15,10 +15,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.WebSocket;
-import registry.machine.AIMAException;
-import registry.machine.Config;
-import registry.machine.RegistryMachineContext;
-import registry.machine.Task;
+import registry.machine.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,13 +30,14 @@ public class Application extends Controller {
 
     public static Result start(int threadNum, int waitTime) {
         log.debug("controller:启动注册机,threadNum:{},waitTime:{}", threadNum, waitTime);
+        RegistryMachineContext.isFilter.set(false);
         if (RegistryMachineContext.sleepTime < waitTime) {
             RegistryMachineContext.sleepTime = waitTime;
         }
-        if (threadNum > 0 && threadNum < 30) {
+        if (threadNum > 0 && threadNum < 200) {
             RegistryMachineContext.registryMachine.thread(threadNum);
-        } else if (threadNum >= 30) {
-            RegistryMachineContext.registryMachine.thread(30);
+        } else if (threadNum >= 200) {
+            RegistryMachineContext.registryMachine.thread(200);
         } else {
             RegistryMachineContext.registryMachine.thread(15);
         }
@@ -53,10 +51,40 @@ public class Application extends Controller {
         return ok("ok");
     }
 
+    public static Result filter(int threadNum) {
+        log.debug("controller:启动注册机过滤邮箱,threadNum:{}", threadNum);
+        RegistryMachineContext.isFilter.set(true);
+        if (threadNum > 0 && threadNum <= 200) {
+            RegistryMachineContext.registryMachine.thread(threadNum);
+        } else if (threadNum > 200) {
+            RegistryMachineContext.registryMachine.thread(200);
+        } else {
+            RegistryMachineContext.registryMachine.thread(30);
+        }
+        try {
+            RegistryMachineContext.start();
+        } catch (NullPointerException e) {
+            Logger.error("启动失败：",e);
+            return internalServerError("请刷新浏览器");
+        }
+        return ok("ok");
+    }
+
+
     public static Result download() {
         response().setContentType("application/x-download");
         response().setHeader("Content-disposition", "attachment; filename=result.txt");
         return ok(RegistryMachineContext.result.toString());
+    }
+
+    public static Result downloadFilter() {
+        response().setContentType("application/x-download");
+        response().setHeader("Content-disposition", "attachment; filename=filter.txt");
+        StringBuilder result = new StringBuilder();
+        for (Task task: RegistryMachineContext.okEmailQueue) {
+            result.append(task.getEmail()).append("\r\n");
+        }
+        return ok(result.toString());
     }
 
     public static Result status() {
@@ -86,21 +114,24 @@ public class Application extends Controller {
         String username = requestData.get("username");
         String password = requestData.get("password");
         log.debug("账号：{},密码：{}", username,password);
-        RegistryMachineContext.AIMAName = username;
-        Config config = new Config(username, password, "1219");
-        RegistryMachineContext.registryMachine.setConfig(config);
+        UUAPI.USERNAME = username;
+        UUAPI.PASSWORD = password;
         return ok("ok");
     }
 
     public static Result stop() {
         log.debug("controller:停止注册机");
-        RegistryMachineContext.stop();
+        try {
+            RegistryMachineContext.stop();
+        } catch (Exception e) {
+        }
         return ok("ok");
     }
 
-    public static Result aima() {
-        log.debug("获取aima账户名称:{}", RegistryMachineContext.AIMAName);
-        return ok(RegistryMachineContext.AIMAName);
+    public static Result uuwise() {
+        System.out.println("cao");
+        log.debug("获取uu账户名称:{}", UUAPI.USERNAME);
+        return ok(UUAPI.USERNAME);
     }
 
     //GET，绑定参数并返回JSON
@@ -140,6 +171,7 @@ public class Application extends Controller {
                 //清理
                 RegistryMachineContext.registryMachine.cleanTask();
                 RegistryMachineContext.result = new StringBuilder();
+                RegistryMachineContext.okEmailQueue.clear();
             } else if ("proxy".equals(name)) {
                 RegistryMachineContext.proxyQueue.clear();
             }
@@ -155,7 +187,7 @@ public class Application extends Controller {
                     if (splits.length != 2) {
                         return badRequest("该行文件内容格式不对：" + line);
                     } else {
-                        RegistryMachineContext.addProxy("--proxy=" + line);
+                        RegistryMachineContext.addProxy(line);
                     }
                 } else {
                     return badRequest("该文件到底是proxy还是email");

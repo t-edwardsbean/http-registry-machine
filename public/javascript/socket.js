@@ -11,6 +11,9 @@ $(function () {
             if(data.value === "注册机运行结束") {
                 $('#outBtn').click();
             }
+            if(data.value === "过滤账号运行结束") {
+                $('#filterOutBtn').click();
+            }
             if(data.value.indexOf("移除无效代理") !== -1) {
                 var num = parseInt($("#proxyNum").text());
                 num = num - 1;
@@ -33,6 +36,10 @@ $(function () {
             num = num + 1;
             $("#networkError").text(num);
             $("#logSection").append(data.value + "<br>")
+        } else if (data.type === "uuRequest") {
+            var num = parseInt($("#uuRequest").text());
+            num = num + 1;
+            $("#uuRequest").text(num);
         }
     };
     chatSocket.onmessage = receiveEvent

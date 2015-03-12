@@ -8,14 +8,16 @@ GET         /status                  controllers.Application.status
 GET         /proxyNum                controllers.Application.proxyNum
 GET         /proxyFile               controllers.Application.getProxyFile
 POST        /proxyFile               controllers.Application.setProxyFile
-POST        /changeUser               controllers.Application.changeUser
+POST        /changeUser              controllers.Application.changeUser
 GET         /start                   controllers.Application.start(threadNum:Int?=15,waitTime:Int?=2000)
+GET         /filter                  controllers.Application.filter(threadNum:Int?=15)
 GET         /stop                    controllers.Application.stop
-GET         /aima                    controllers.Application.aima
+GET         /uuwise                  controllers.Application.uuwise
 GET         /hello/:name             controllers.Application.hello(name:String)
 POST        /hello                   controllers.Application.post
 GET         /socket                  controllers.Application.socket
 GET         /download                controllers.Application.download
+GET         /downloadFilter          controllers.Application.downloadFilter
 # Versioned Assets
 GET         /vassets/*file           controllers.Assets.versioned(path="/public", file: Asset)
 

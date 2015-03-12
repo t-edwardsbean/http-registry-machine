@@ -91,7 +91,7 @@
                                 </tr>
                                 <tr>
                                     <td>邮箱类型</td>
-                                    <td>sina.com</td>
+                                    <td>sohu.com</td>
                                 </tr>
                                 <tr>
                                     <td>等待时间</td>
@@ -112,15 +112,11 @@
                                 <tbody>
                                 <tr>
                                     <td class="col-sm-6">打码平台</td>
-                                    <td class="col-sm-6">爱玛</td>
+                                    <td class="col-sm-6">uuwise</td>
                                 </tr>
                                 <tr>
                                     <td>用户名称</td>
                                     <td id="aimaUser">无</td>
-                                </tr>
-                                <tr>
-                                    <td>等待时间</td>
-                                    <td>3000</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -174,6 +170,10 @@
                                 <td>邮箱错误</td>
                                 <td id="emailException">0</td>
                             </tr>
+                            <tr>
+                                <td>打码次数</td>
+                                <td id="uuRequest">0</td>
+                            </tr>
                             </tbody>
                         </table>
                     </ul>
@@ -195,10 +195,14 @@
                                     <button id="stopBtn" type="button" class="btn btn-default navbar-btn disabled"
                                             onclick="stop()">停止
                                     </button>
+                                    <button class="btn btn-default navbar-btn disabled" id="filterBtn" onclick="filter()">过滤</button>
+                                    <a href="/downloadFilter"  id="filterOutBtn" class="btn btn-default navbar-btn">过滤导出
+                                    </a>
+                                    <a style="color:#FF0000;font-weight:bold;">请在8:00-23:00时段内使用注册机，避免损失不必要的验证码成本。谢谢</a>
                                     <button id="configBtn" type="button" class="btn btn-default navbar-btn navbar-right"
                                             data-toggle="modal" data-target="#myModal">配置
                                     </button>
-                                    <a id="outBtn" href="http://localhost:9000/download" style="margin-right: 10px" class="btn btn-default navbar-btn navbar-right">导出
+                                    <a id="outBtn" href="/download" style="margin-right: 10px" class="btn btn-default navbar-btn navbar-right">导出
                                     </a>
                                     <!--<button id="outBtn" type="button" class="btn btn-default navbar-btn navbar-right" onclick="out()">导出</button>-->
 
@@ -270,13 +274,13 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>爱码账号</td>
+                        <td>uu账号</td>
                         <td>
                             <input id="username" class="form-control field" type="text"/>
                         </td>
                     </tr>
                     <tr>
-                        <td>爱码密码</td>
+                        <td>uu密码</td>
                         <td>
                             <input id="password" class="form-control field" type="password"/>
                         </td>

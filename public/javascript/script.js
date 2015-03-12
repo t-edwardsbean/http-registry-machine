@@ -1,5 +1,5 @@
 $.ajax({
-    url: "aima",
+    url: "uuwise",
     type: 'get',
     success: function (msg) {
         $('#aimaUser').html(msg);
@@ -30,6 +30,7 @@ $.ajax({
 function start() {
     var threadNum = $('#modal-threadNum').val();
     var waitTime = $('#modal-waitTime').val();
+    $('#logSection').html("");
     var data = new Object();
     if (threadNum !== "") {
         data["threadNum"] = threadNum;
@@ -65,14 +66,26 @@ function stop() {
         success: function (msg) {
             if (msg !== "ok") {
                 alert("停止失败")
+            } else {
             }
         }
     });
 }
 
 $('#saveBtn').onclick = save;
+function filter() {
+    $('#logSection').html("");
+    $.ajax({
+        url: "filter",
+        type: 'get',
+        success: function (msg) {
+        }
+    });
+}
+
 function save() {
     stop();
+    $('#filterBtn').removeClass("disabled");
     var threadNum = $('#modal-threadNum').val();
     var waitTime = $('#modal-waitTime').val();
     var proxyPath = $('#proxy-select').val();
@@ -95,16 +108,17 @@ function save() {
             $('#proxyNum').html(msg);
         }
     });
-    $.ajax({
-        url: "changeUser",
-        type: 'post',
-        data : {
-            username: username,
-            password: password
-        }
-    });
+
     if (username !== "") {
         $('#aimaUser').html(username);
+        $.ajax({
+            url: "changeUser",
+            type: 'post',
+            data : {
+                username: username,
+                password: password
+            }
+        });
     }
     if (threadNum !== "") {
         $('#threadNum').html(threadNum);
