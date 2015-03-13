@@ -146,6 +146,7 @@ public class RegistryMachine {
                             endException = ",代理用完，剩余" + queue.size() + "未注册";
                         }
                         LogUtils.log("注册机运行结束" + endException);
+                        log.info("注册机运行结束" + endException);
                     }
                 }
             }

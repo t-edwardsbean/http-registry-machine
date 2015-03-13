@@ -3,7 +3,9 @@ package registry.machine;
 import com.google.common.io.Files;
 import com.jayway.jsonpath.JsonPath;
 import models.Code;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -41,6 +43,10 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
         CookieStore cookieStore = new BasicCookieStore();
         HttpClientContext context = HttpClientContext.create();
         context.setCookieStore(cookieStore);
+        try (CloseableHttpResponse login = HttpUtils.httpclient.execute(new HttpGet("http://i.sohu.com/login/reg.do"), context)) {
+        } catch (Exception e) {
+        }
+
         if (!isEmailOK(task)) {
             LogUtils.emailException();
             return;
@@ -51,11 +57,10 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             return;
         }
 
-
+        String proxy = RegistryMachineContext.proxyQueue.poll();
         while (!Thread.currentThread().isInterrupted()) {
             //获取图片验证码
             Code code = getPictureCode(context, task);
-            String proxy = RegistryMachineContext.proxyQueue.poll();
             //提交
             HttpPost submitEmail = new HttpPost("http://i.sohu.com/login/sreg.do?_input_encode=utf-8");
             submitEmail.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36");
@@ -76,8 +81,8 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             nvps.add(new BasicNameValuePair("agree", "on"));
             //中文url编码
             submitEmail.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-            submitEmail.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
-            submitEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 10000);
+            submitEmail.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 4000);
+            submitEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 4000);
             CloseableHttpResponse submitEmailResponse = null;
             String submitEmailResult = null;
             int statusCode = 0;
@@ -115,14 +120,14 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                     }
                 }
             }
-            returnProxy(proxy);
             //为了防止提交成功，但是服务器链接不稳定抛出异常而误判失败，再对邮箱做一次校验
             if (isSubmitError) {
                 LogUtils.log(task, "为了防止提交成功，但是服务器链接不稳定抛出异常而误判失败，再对邮箱做一次校验");
-                if(!isEmailOK(task)) {
+                if (!isEmailOK(task)) {
                     LogUtils.log(task, "注册成功");
                     LogUtils.successEmail(task);
                     log.info(task + "注册成功");
+                    returnProxy(proxy);
                     return;
                 }
             }
@@ -147,9 +152,10 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                 LogUtils.log(task, "注册成功");
                 LogUtils.successEmail(task);
                 log.info(task + "注册成功");
+                returnProxy(proxy);
                 return;
             } else if (statusCode != 200) {
-                LogUtils.log(task,"，状态码非200，重试");
+                LogUtils.log(task, "，状态码非200，重试");
                 log.info(task + "，状态码非200，重试:" + submitEmailResult);
             } else {
                 LogUtils.log(task, "注册失败：详细错误查看日志,尝试继续注册");
@@ -161,6 +167,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                     LogUtils.log(task, "注册成功");
                     LogUtils.successEmail(task);
                     log.info(task + "注册成功");
+                    returnProxy(proxy);
                     return;
                 }
             }
@@ -190,7 +197,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
         cookieStore.getCookies().clear();
         HttpGet checkEmail = new HttpGet("http://i.sohu.com/login/checksname?cn=" + task.getEmail());
         checkEmail.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
-        checkEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 30000);
+        checkEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 10000);
         checkEmail.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36");
         checkEmail.addHeader("Referer", "http://i.sohu.com/login/reg.do");
         CloseableHttpResponse checkEmailResponse = null;
@@ -254,22 +261,37 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
         while (!Thread.currentThread().isInterrupted()) {
             LogUtils.log(task, "获取图片验证码");
             log.info(task + "获取图片验证码");
-            String path = System.getProperty("java.io.tmpdir") + "\\" + System.currentTimeMillis() + "-Code.jpg";
+            String path = "tmp\\" + System.currentTimeMillis() + "-Code.jpg";
             File file = new File(path);
-            CloseableHttpResponse pictureOneResponse = HttpUtils.httpclient.execute(new HttpGet("http://i.sohu.com/vcode/register/?nocache=" + (new Date()).getTime()), context);
-            BufferedInputStream bis = new BufferedInputStream(pictureOneResponse.getEntity().getContent());
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
-            int inByte;
-            while ((inByte = bis.read()) != -1) bos.write(inByte);
-            bos.close();
-            bis.close();
-            pictureOneResponse.close();
-            Thread.sleep(2000);
-            log.info(task + "识别图片验证码:" + path) ;
+            CloseableHttpResponse response = null;
+            try {
+                response = HttpUtils.httpclient.execute(new HttpGet("http://i.sohu.com/vcode/register/?nocache=" + (new Date()).getTime()), context);
+                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                    InputStream input = response.getEntity().getContent();
+                    //定义输出文件(文件格式要和资源匹配)
+                    FileUtils.copyInputStreamToFile(input, file);
+                } else {
+                    CookieStore cookieStore = new BasicCookieStore();
+                    context = HttpClientContext.create();
+                    context.setCookieStore(cookieStore);
+                    log.warn(task + "，非200状态码，下载失败");
+                    Thread.sleep(2000);
+                    continue;
+                }
+            } catch (IOException e) {
+            } finally {
+                if (response != null) {
+                    try {
+                        EntityUtils.consume(response.getEntity());
+                    } catch (Exception e) {
+                    }
+                }
+            }
+            log.info(task + "识别图片验证码:" + path);
             LogUtils.log(task, "等待UU平台识别图片验证码，会比较慢稍等");
             String result[];
             try {
-                result = UUAPI.easyDecaptcha(Files.toByteArray(file), 2004);
+                result = UUAPI.easyDecaptcha(path, 2004);
             } catch (NullPointerException e) {
                 log.info(task + "验证码识别异常，等待重试");
                 LogUtils.log(task, "验证码识别异常，等待重试");
@@ -292,12 +314,12 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                 LogUtils.log(task, "验证码超时或者乱码，向UU汇报验证码错误");
                 log.info(task + ",验证码超时或者乱码，向UU汇报验证码错误");
                 Thread.sleep(1000);
-            } else if("-1004".equals(code.getCode())){
+            } else if ("-1004".equals(code.getCode())) {
                 Thread.sleep(1000);
-            } else if(codeInf != null) {
+            } else if (codeInf != null) {
                 LogUtils.log(task, "验证码异常：" + codeInf + ",重试");
                 Thread.sleep(3000);
-            }else {
+            } else {
                 LogUtils.uuRequest(task);
                 return code;
             }
@@ -320,6 +342,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             }
         }
     }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         String uid = "2509003147";
         String pwd = "1314520";

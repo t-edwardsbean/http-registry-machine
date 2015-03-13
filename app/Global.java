@@ -1,4 +1,6 @@
 import com.google.common.io.Files;
+import models.Log;
+import org.apache.commons.io.FileUtils;
 import play.Application;
 import play.Configuration;
 import play.GlobalSettings;
@@ -41,6 +43,13 @@ public class Global extends GlobalSettings {
         RegistryMachineContext.registryMachine.thread(threadNum);
         RegistryMachineContext.registryMachine.setTaskProcess(new HttpOldSohuTaskProcess());
         boolean status = false;    //校验API，必须调用一次，校验失败，打码不成功
+        File tmp = new File("tmp");
+        try {
+            FileUtils.deleteDirectory(tmp);
+        } catch (IOException e) {
+            Logger.info("清理临时文件夹失败：tmp");
+        }
+        tmp.mkdir();
         File c = new File("lib\\UUWiseHelper.dll");
         Logger.debug("文件是否存在：" + c.exists());
         try {
