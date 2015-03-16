@@ -98,7 +98,8 @@ public class UUAPI {
             code = "校验失败";
         }
 
-        String rs[] = {String.valueOf(codeID), checkResult(resultResult, codeID)};
+//        String rs[] = {String.valueOf(codeID), checkResult(resultResult, codeID)};
+        String rs[] = {String.valueOf(codeID), code};
         return rs;
     }
 

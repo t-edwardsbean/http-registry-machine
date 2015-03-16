@@ -1,6 +1,5 @@
 package registry.machine;
 
-import com.google.common.io.Files;
 import com.jayway.jsonpath.JsonPath;
 import models.Code;
 import org.apache.commons.io.FileUtils;
@@ -14,7 +13,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -25,18 +23,20 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by edwardsbean on 2015/3/1 0001.
  */
 public class HttpOldSohuTaskProcess implements TaskProcess {
     private static Logger log = LoggerFactory.getLogger(HttpOldSohuTaskProcess.class);
+    private static Pattern p = Pattern.compile("[\u4e00-\u9fa5]+");
 
     @Override
     public void process(Task task) throws Exception {
@@ -57,7 +57,11 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             return;
         }
 
-        String proxy = RegistryMachineContext.proxyQueue.poll();
+        String proxy = getValidProxy(task);
+        if (proxy == null) {
+            return;
+        }
+
         while (!Thread.currentThread().isInterrupted()) {
             //获取图片验证码
             Code code = getPictureCode(context, task);
@@ -81,8 +85,8 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             nvps.add(new BasicNameValuePair("agree", "on"));
             //中文url编码
             submitEmail.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-            submitEmail.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 4000);
-            submitEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 4000);
+            submitEmail.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
+            submitEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 10000);
             CloseableHttpResponse submitEmailResponse = null;
             String submitEmailResult = null;
             int statusCode = 0;
@@ -147,7 +151,8 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             }
             if (submitEmailResult != null && submitEmailResult.contains("您的注册数量已超过正常限制,请使用已有账号进行登录")) {
                 LogUtils.log(task, ",注册数量已超过正常限制：" + submitEmail.getParams().getParameter(ConnRoutePNames.DEFAULT_PROXY));
-                continue;
+                returnProxy(proxy);
+                throw new MachineException("注册数量已超过正常限制：" + submitEmail.getParams().getParameter(ConnRoutePNames.DEFAULT_PROXY));
             } else if (cookieStore.getCookies().size() == 6) {
                 LogUtils.log(task, "注册成功");
                 LogUtils.successEmail(task);
@@ -157,6 +162,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             } else if (statusCode != 200) {
                 LogUtils.log(task, "，状态码非200，重试");
                 log.info(task + "，状态码非200，重试:" + submitEmailResult);
+                initCookie(context);
             } else {
                 LogUtils.log(task, "注册失败：详细错误查看日志,尝试继续注册");
                 log.error("{},尝试继续注册，cookie:{},状态码：{},网页信息：{}", task, cookieStore.getCookies(), statusCode, submitEmailResult);
@@ -173,6 +179,44 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             }
         }
 
+    }
+
+    public String getValidProxy(Task task) {
+        while (!Thread.currentThread().isInterrupted()) {
+            String proxy = RegistryMachineContext.proxyQueue.poll();
+            if (proxy == null){
+                LogUtils.log(task, "代理已用完，不尝试重新注册");
+                log.info(task + ",代理已用完，不尝试重新注册");
+                return null;
+            }
+            String ip = proxy.split(":")[0];
+            int port = Integer.parseInt(proxy.split(":")[1]);
+            HttpGet httpget = new HttpGet("http://i.sohu.com/login/reg.do");
+            CookieStore cookieStore = new BasicCookieStore();
+            HttpClientContext context = HttpClientContext.create();
+            context.setCookieStore(cookieStore);
+            httpget.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 6000);
+            httpget.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 6000);
+            httpget.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, new HttpHost(ip, port, "http"));
+            try (CloseableHttpResponse response = HttpUtils.httpclient.execute(httpget, context)) {
+                String responseResult = EntityUtils.toString(response.getEntity());
+                if (responseResult.contains("Sohu")) {
+                    log.info(task + ",ip验证有效:" + proxy);
+                    LogUtils.log(task, "ip验证有效:" + proxy);
+                    return proxy;
+                } else {
+                    log.info(task + ",ip验证失败，没有包含关键字");
+                    LogUtils.log(task, "ip验证失败，没有包含关键字:" + proxy);
+                }
+            } catch (Exception e) {
+                LogUtils.networkException(LogUtils.format(task, "校验代理ip超时"));
+                //移除无效代理
+                if (proxy != null) {
+                    LogUtils.log(task, "移除无效代理：" + proxy + ",立刻切换IP重试");
+                }
+            }
+        }
+        return null;
     }
 
     public void addProxy(String proxy, HttpRequestBase requestBase, Task task) {
@@ -218,7 +262,6 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e1) {
-
                     }
                     continue;
                 }
@@ -291,7 +334,9 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             LogUtils.log(task, "等待UU平台识别图片验证码，会比较慢稍等");
             String result[];
             try {
+                long start = System.currentTimeMillis();
                 result = UUAPI.easyDecaptcha(path, 2004);
+                LogUtils.log(task, "识别验证码耗时：" + (System.currentTimeMillis() - start));
             } catch (NullPointerException e) {
                 log.info(task + "验证码识别异常，等待重试");
                 LogUtils.log(task, "验证码识别异常，等待重试");
