@@ -85,8 +85,8 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             nvps.add(new BasicNameValuePair("agree", "on"));
             //中文url编码
             submitEmail.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-            submitEmail.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
-            submitEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 10000);
+            submitEmail.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 4000);
+            submitEmail.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 4000);
             CloseableHttpResponse submitEmailResponse = null;
             String submitEmailResult = null;
             int statusCode = 0;
@@ -107,8 +107,8 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                     LogUtils.networkException(LogUtils.format(task, "提交注册请求失败：" + e.getMessage() + ",状态码：" + statusCode + "代理ip:" + submitEmail.getParams().getParameter(ConnRoutePNames.DEFAULT_PROXY)));
                     //移除无效代理
                     if (proxy != null) {
-                        LogUtils.log(task, "移除无效代理：" + proxy + ",立刻切换IP重试");
-                        proxy = RegistryMachineContext.proxyQueue.poll();
+//                        LogUtils.log(task, "移除无效代理：" + proxy + ",立刻切换IP重试");
+                        proxy = getValidProxy(task);
                     } else {
                         LogUtils.log(task, "代理已用完，不尝试重新注册");
                         log.info(task + ",代理已用完，不尝试重新注册");
@@ -195,8 +195,8 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
             CookieStore cookieStore = new BasicCookieStore();
             HttpClientContext context = HttpClientContext.create();
             context.setCookieStore(cookieStore);
-            httpget.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 6000);
-            httpget.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 6000);
+            httpget.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 4000);
+            httpget.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 4000);
             httpget.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, new HttpHost(ip, port, "http"));
             try (CloseableHttpResponse response = HttpUtils.httpclient.execute(httpget, context)) {
                 String responseResult = EntityUtils.toString(response.getEntity());
@@ -212,7 +212,7 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                 LogUtils.networkException(LogUtils.format(task, "校验代理ip超时"));
                 //移除无效代理
                 if (proxy != null) {
-                    LogUtils.log(task, "移除无效代理：" + proxy + ",立刻切换IP重试");
+//                    LogUtils.log(task, "移除无效代理：" + proxy + ",立刻切换IP重试");
                 }
             }
         }
@@ -361,9 +361,15 @@ public class HttpOldSohuTaskProcess implements TaskProcess {
                 Thread.sleep(1000);
             } else if ("-1004".equals(code.getCode())) {
                 Thread.sleep(1000);
+            } else if ("-11009".equals(code.getCode())) {
+                throw new RuntimeException(task + "，UU账户余额不足，无法获得验证码");
             } else if (codeInf != null) {
                 LogUtils.log(task, "验证码异常：" + codeInf + ",重试");
                 Thread.sleep(3000);
+            } else if (!p.matcher(code.getCode()).matches()) {
+                //返回的验证码非中文，则错误
+                UUAPI.reportError(Integer.parseInt(result[0]));
+                LogUtils.log(task, "返回的验证码非中文，向UU汇报验证码错误");
             } else {
                 LogUtils.uuRequest(task);
                 return code;

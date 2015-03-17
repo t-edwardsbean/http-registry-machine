@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RegistryMachineContext {
     public static boolean isDebug = false;
     public static String AIMAName;
+    public static String YAOYAO;
     public static int sleepTime = 2000;
     public static ActorRef logger;
     public static String proxyFileName = "无";

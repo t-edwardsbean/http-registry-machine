@@ -27,6 +27,7 @@ public class Global extends GlobalSettings {
         UUAPI.USERNAME = playConfiguration.getString("uu.uid");
         UUAPI.PASSWORD = playConfiguration.getString("uu.pwd");
         boolean isDebug = playConfiguration.getBoolean("phantomjs.debug");
+        String yaoyao = playConfiguration.getString("yaoyao.key");
         String phantomjsPath = playConfiguration.getString("phantomjs.path");
         int threadNum = playConfiguration.getInt("phantomjs.thread");
         Config config = new Config(uid, pwd, pid);
@@ -37,8 +38,10 @@ public class Global extends GlobalSettings {
         Logger.info("是否调试模式：{}", isDebug);
         Logger.info("临时文件夹：{}", folder);
         Logger.info("UU验证码编码：{}", encode);
+        Logger.info("瑶瑶key：{}", yaoyao);
         RegistryMachineContext.encode = encode;
         RegistryMachineContext.isDebug = isDebug;
+        RegistryMachineContext.YAOYAO = yaoyao;
         RegistryMachineContext.registryMachine.setConfig(config);
         RegistryMachineContext.registryMachine.thread(threadNum);
         RegistryMachineContext.registryMachine.setTaskProcess(new HttpOldSohuTaskProcess());
@@ -65,6 +68,10 @@ public class Global extends GlobalSettings {
         } else {
             Logger.info("校验UUAPI成功");
         }
+        Logger.info("初始化代理");
+        RegistryMachineContext.addProxies(YAOAPI.getProxies());
+        Logger.info("代理池大小：" + RegistryMachineContext.proxyQueue.size());
+
 
 //        RegistryMachineContext.registryMachine.addTask(new Task("asdfaz123asc", "2692194"));
     }

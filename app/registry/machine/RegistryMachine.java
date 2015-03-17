@@ -26,7 +26,8 @@ public class RegistryMachine {
     private final AtomicLong count = new AtomicLong(0);
     private Thread asynRun;
     private int threadNum;
-    ;
+    //线程池待执行的任务队列
+    private LinkedBlockingQueue<Runnable> taskQueue;
 
     public void cleanTask() {
         this.queue = new ConcurrentLinkedQueue<Task>();
@@ -43,7 +44,12 @@ public class RegistryMachine {
     public void thread(int num) {
         this.threadNum = num;
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("TaskProcessorThread-%d").build();
-        this.service = Executors.newFixedThreadPool(num, nameThreadFactory);
+//        this.service = Executors.newFixedThreadPool(num, nameThreadFactory);
+        taskQueue = new LinkedBlockingQueue<Runnable>();
+        this.service = new ThreadPoolExecutor(num, num,
+                0L, TimeUnit.MILLISECONDS,
+                taskQueue,
+                nameThreadFactory);
 
     }
 
@@ -82,11 +88,11 @@ public class RegistryMachine {
                         while (!queue.isEmpty()) {
                             final Task task = queue.poll();
 //                            final String proxy = RegistryMachineContext.proxyQueue.poll();
-                            if (RegistryMachineContext.proxyQueue.isEmpty()) {
-                                log.error("代理已用完或为空");
-                                LogUtils.log("代理已用完或为空");
-                                break;
-                            }
+//                            if (RegistryMachineContext.proxyQueue.isEmpty()) {
+//                                log.error("代理已用完或为空");
+//                                LogUtils.log("代理已用完或为空");
+//                                break;
+//                            }
                             service.execute(new Runnable() {
                                 @Override
                                 public void run() {
@@ -132,9 +138,13 @@ public class RegistryMachine {
 //                                break;
 //                            }
 //                        }
-                        log.info("代理队列：" + RegistryMachineContext.proxyQueue.size() + "　任务队列：" + queue.size() + " 活跃线程：" + (threadNum - semaphore.availablePermits()));
+                        if (RegistryMachineContext.proxyQueue.size() < 50) {
+                            log.info("代理池小于50，重新获取");
+                            RegistryMachineContext.addProxies(YAOAPI.getProxies());
+                        }
+                        log.info("代理队列：" + RegistryMachineContext.proxyQueue.size() + " 等待队列：" + taskQueue.size() + "　任务队列：" + queue.size() + " 活跃线程：" + (threadNum - semaphore.availablePermits()));
                         //全部任务运行完成
-                        if (semaphore.availablePermits() == threadNum) {
+                        if (semaphore.availablePermits() == threadNum && taskQueue.isEmpty() && queue.isEmpty()) {
                             break;
                         }
                     }
