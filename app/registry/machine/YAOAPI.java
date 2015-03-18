@@ -16,7 +16,7 @@ public class YAOAPI {
     public static List<String> getProxies() {
         List<String> proxies = new ArrayList<>();
         HttpClientContext context = HttpClientContext.create();
-        try (CloseableHttpResponse response = HttpUtils.httpclient.execute(new HttpGet("http://www.httpsdaili.com/api.asp?key=uhde9383de&getnum=300&filter=1&area=1&proxytype=0"), context)) {
+        try (CloseableHttpResponse response = HttpUtils.httpclient.execute(new HttpGet("http://www.httpsdaili.com/api.asp?key=" + RegistryMachineContext.YAOYAO + "&getnum=300&filter=1&area=1&proxytype=0"), context)) {
             String result = EntityUtils.toString(response.getEntity());
             String[] all = result.split("\r\n");
             Collections.addAll(proxies, all);
